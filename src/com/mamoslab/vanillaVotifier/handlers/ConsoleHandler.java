@@ -38,8 +38,10 @@ public class ConsoleHandler {
 						VanillaVotifier.getConnectionHandler().stop();
 						try {
 							Thread.sleep(1000);
-						} catch (InterruptedException ex) {
+						} catch (InterruptedException e) {
+							// Can't happen
 						}
+						VanillaVotifier.getConfigHandler().load();
 						VanillaVotifier.getConnectionHandler().start();
 					} else if (command.equalsIgnoreCase("genrsakeys")) {
 						LOGGER.info("Generating new RSA keys...");
@@ -47,7 +49,7 @@ public class ConsoleHandler {
 						VanillaVotifier.getConfigHandler().save();
 						try {
 							Thread.sleep(1000);
-						} catch (InterruptedException e2) {
+						} catch (InterruptedException e) {
 							// Can't happen
 						}
 						LOGGER.info("RSA keys generated.");
