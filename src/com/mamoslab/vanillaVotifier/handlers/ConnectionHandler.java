@@ -154,7 +154,7 @@ public class ConnectionHandler {
 					LOGGER.info(socket.getRemoteSocketAddress() + " established a connection.");
 
 					try {
-						out.write("Provided by Vanilla Votifier, coded by Mamo (http://mamoslab.com/)");
+						out.write("Provided by Vanilla Votifier (https://github.com/MamosLab/Vanilla-votifier).");
 						out.newLine();
 						out.flush();
 					} catch (Exception e) {
