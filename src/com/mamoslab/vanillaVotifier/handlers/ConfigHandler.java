@@ -136,7 +136,7 @@ public class ConfigHandler {
 		save();
 	}
 
-	public Integer getVotifierPort() {
+	public int getVotifierPort() {
 		try {
 			return Integer.parseInt(config.getProperty("votifier.port"));
 		} catch (NumberFormatException e) {
