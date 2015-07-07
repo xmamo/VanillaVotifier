@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 public class VanillaVotifier {
 
 	private static final Logger LOGGER;
+
 	private static ConfigHandler configHandler;
 	private static ConnectionHandler connectionHandler;
 	private static ConsoleHandler consoleHandler;
@@ -21,18 +22,20 @@ public class VanillaVotifier {
 
 		LOGGER = Logger.getLogger(VanillaVotifier.class.getName());
 		LOGGER.setLevel(Level.ALL);
-		
+
 		configHandler = new ConfigHandler(new File("votifier.properties"));
 		connectionHandler = new ConnectionHandler();
 		consoleHandler = new ConsoleHandler();
 	}
 
 	public static void main(String[] args) {
-		configHandler.load();
-		connectionHandler.start();
 		consoleHandler.start();
+		
+		if (!configHandler.load() || !connectionHandler.start()) {
+			System.exit(0);
+		}		
 	}
-	
+
 	public static ConfigHandler getConfigHandler() {
 		return configHandler;
 	}
@@ -40,7 +43,7 @@ public class VanillaVotifier {
 	public static ConnectionHandler getConnectionHandler() {
 		return connectionHandler;
 	}
-	
+
 	public static ConsoleHandler getConsoleHandler() {
 		return consoleHandler;
 	}

@@ -34,17 +34,17 @@ public class ConfigHandler {
 		this.configFile = settingsFile;
 	}
 
-	public void load() {
+	public boolean load() {
 		if (configFile.exists() && configFile.isDirectory()) {
 			Logger.getLogger(VanillaVotifier.class.getName()).severe("There seems to be a directory named like the settings file Vanilla votifier would need! Please rename or delete it.");
-			System.exit(0);
+			return false;
 		}
 		if (!configFile.exists()) {
 			try {
 				configFile.createNewFile();
 			} catch (IOException ex) {
 				LOGGER.severe("Couldn't access settings file!");
-				System.exit(0);
+				return false;
 			}
 		}
 		config = new Properties();
@@ -52,7 +52,7 @@ public class ConfigHandler {
 			config.load(new BufferedReader(new InputStreamReader(new FileInputStream(configFile), "UTF-8")));
 		} catch (IOException ex) {
 			LOGGER.severe("Couldn't access settings file!");
-			System.exit(0);
+			return false;
 		}
 		boolean save = false;
 		if (!config.containsKey("config-version")) {
@@ -97,8 +97,9 @@ public class ConfigHandler {
 		}
 		if (!config.containsKey("mc-rcon.password") || config.getProperty("mc-rcon.password") == null || config.getProperty("mc-rcon.password").isEmpty()) {
 			LOGGER.severe("\"mc-rcon.password\" not set! Please configure it in the config!");
-			System.exit(0);
+			return false;
 		}
+		return true;
 	}
 
 	public void save() {
@@ -183,7 +184,7 @@ public class ConfigHandler {
 			// Can't happen
 		}
 	}
-	
+
 	public String getVotifierOnVoteMcScript() {
 		return config.getProperty("votifier.on-vote.mc-script");
 	}
@@ -220,11 +221,11 @@ public class ConfigHandler {
 		config.setProperty("mc-rcon.port", port + "");
 		save();
 	}
-	
+
 	public String getMcRconPassword() {
 		return config.getProperty("mc-rcon.password");
 	}
-	
+
 	public void setMcRconPassword(String password) {
 		config.setProperty("mc-rcon.password", password);
 		save();
