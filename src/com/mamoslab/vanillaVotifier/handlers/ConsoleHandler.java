@@ -41,8 +41,9 @@ public class ConsoleHandler {
 						} catch (InterruptedException e) {
 							// Can't happen
 						}
-						VanillaVotifier.getConfigHandler().load();
-						VanillaVotifier.getConnectionHandler().start();
+						if (!VanillaVotifier.getConfigHandler().load() || !VanillaVotifier.getConnectionHandler().start()) {
+							System.exit(0);
+						}
 					} else if (command.equalsIgnoreCase("genrsakeys")) {
 						LOGGER.info("Generating new RSA keys...");
 						VanillaVotifier.getConfigHandler().genVotifierRSAKeys();
