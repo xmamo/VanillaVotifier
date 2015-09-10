@@ -9,7 +9,7 @@ You can download the lastest version of Vanilla votifier from <a href="https://g
 
 Once downloaded, you can startup the program with <code>java -jar Vanilla_votifier.jar</code>. The program will generate a configuration file and halt immediately after. Please open the file and configure its settings. If you need help with the configuration, set the password for the Minecraft RCon login, start Vanilla votifier again, type <code>manual</code>, then enter.
 
-Please note that the port for Vanilla votifier configured has to be opened! In Linux, this can be achived with <code>iptables -I INPUT -p tcp --dport -j ACCEPT</code>.
+Please note that the port for Vanilla votifier configured has to be opened! In Linux, this can be achived with <code>iptables -I INPUT -p tcp --dport <Vanilla Votifier port> -j ACCEPT</code>.
 
 <h2>Any more questions? Did you find a bug or want a new feature?</h2>
 If you have any questions, please read through the manual of Vanilla votifier first (you can do this by typing the <code>manual</code> command while the program is running): this may already helps you out!
