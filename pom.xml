@@ -43,7 +43,7 @@
 					<archive>
 						<index>true</index>
 						<manifest>
-							<mainClass>co.virtualDragon.vanillaVotifier.VanillaVotifierStandalone</mainClass>
+							<mainClass>co.virtualdragon.vanillaVotifier.VanillaVotifierStandalone</mainClass>
 						</manifest>
 						<manifestEntries>
 							<Built-By>VirtualDragon</Built-By>
@@ -74,7 +74,7 @@
 							</filters>
 							<transformers>
 								<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-									<mainClass>co.virtualDragon.vanillaVotifier.VanillaVotifierStandalone</mainClass>
+									<mainClass>co.virtualdragon.vanillaVotifier.VanillaVotifierStandalone</mainClass>
 								</transformer>
 							</transformers>
 						</configuration>
