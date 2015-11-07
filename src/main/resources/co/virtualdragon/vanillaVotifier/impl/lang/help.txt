@@ -4,7 +4,7 @@ gen-key-pair [key-size]	Generates new RSA keys for the VanillaVotifier server.
 help			Shows all avaiable commands with usage explanation.
 info			Shows information about VanillaVotifier.
 manual			Displays a detailed manual of VanillaVotifier.
-reload			Rloads the configuration of VanillaVotifier.
+reload			Reloads the configuration of VanillaVotifier.
 stop			Stops the VanillaVotifier server.
 test-query <query>	Sends an enciphered query to VanillaVotifier itself. For
 			debugging purposes only.
