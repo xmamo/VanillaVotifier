@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>co.virtualdragon</groupId>
 	<artifactId>VanillaVotifier</artifactId>
-	<version>2.2</version>
+	<version>2.3</version>
 	<name>VanillaVotifier</name>
 	<packaging>jar</packaging>
 	<dependencies>
@@ -29,6 +29,21 @@
 		<maven.compiler.target>1.6</maven.compiler.target>
 	</properties>
 	<build>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<includes>
+					<include>**</include>
+				</includes>
+			</resource>
+			<resource>
+				<directory>src/main/resources</directory>
+				<includes>
+					<include>co/virtualdragon/vanillaVotifier/impl/lang/info.txt</include>
+				</includes>
+				<filtering>true</filtering>
+			</resource>
+		</resources>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

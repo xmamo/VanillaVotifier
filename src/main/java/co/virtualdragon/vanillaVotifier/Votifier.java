@@ -11,7 +11,7 @@ public interface Votifier {
 	CommandSender getCommandSender();
 
 	Server getServer();
-	
+
 	Rcon getRcon();
 
 	Tester getTester();

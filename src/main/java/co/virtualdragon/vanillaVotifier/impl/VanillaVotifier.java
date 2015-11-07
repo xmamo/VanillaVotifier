@@ -137,6 +137,12 @@ public class VanillaVotifier implements Votifier {
 				} else {
 					votifier.getOutputWriter().println(votifier.getLanguagePack().getString("s37"));
 				}
+			} else if (command.equalsIgnoreCase("info") || command.toLowerCase().startsWith("info ")) {
+				if (command.split(" ").length == 1) {
+					votifier.getOutputWriter().println(votifier.getLanguagePack().getString("s40"));
+				} else {
+					votifier.getOutputWriter().println(votifier.getLanguagePack().getString("s41"));
+				}
 			} else {
 				votifier.getOutputWriter().println(votifier.getLanguagePack().getString("s33"));
 			}

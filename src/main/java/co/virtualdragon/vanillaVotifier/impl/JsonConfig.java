@@ -28,7 +28,7 @@ import org.json.JSONTokener;
 public class JsonConfig implements Config {
 
 	private final File configFile;
-	
+
 	private boolean loaded;
 	private int configVersion;
 	private InetSocketAddress inetSocketAddress;

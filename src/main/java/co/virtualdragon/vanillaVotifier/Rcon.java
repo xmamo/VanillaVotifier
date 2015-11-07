@@ -6,9 +6,9 @@ import java.io.UnsupportedEncodingException;
 public interface Rcon {
 
 	int getRequestId();
-	
+
 	void connect() throws IOException;
-	
+
 	boolean isConnected();
 
 	Packet logIn(String password) throws UnsupportedEncodingException, IOException;
