@@ -16,7 +16,6 @@ import co.virtualdragon.vanillaVotifier.event.server.EncryptedInputReceivedEvent
 import co.virtualdragon.vanillaVotifier.event.server.InvalidRequestEvent;
 import co.virtualdragon.vanillaVotifier.event.server.RconExceptionEvent;
 import co.virtualdragon.vanillaVotifier.event.server.SendingRconCommandEvent;
-import co.virtualdragon.vanillaVotifier.event.server.ServerCloseExceptionEvent;
 import co.virtualdragon.vanillaVotifier.event.server.ServerStartedEvent;
 import co.virtualdragon.vanillaVotifier.event.server.ServerStartingEvent;
 import co.virtualdragon.vanillaVotifier.event.server.ServerStoppedEvent;
@@ -27,6 +26,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketOptions;
+import java.net.SocketTimeoutException;
 import java.security.GeneralSecurityException;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -38,7 +39,7 @@ public class VanillaVotifierServer implements Server {
 
 	private final Votifier votifier;
 	private final HashSet<Listener> listeners;
-	
+
 	private boolean running;
 	private ServerSocket serverSocket;
 
@@ -59,6 +60,7 @@ public class VanillaVotifierServer implements Server {
 		notifyListeners(new ServerStartingEvent());
 		serverSocket = new ServerSocket();
 		serverSocket.bind(votifier.getConfig().getInetSocketAddress());
+		serverSocket.setSoTimeout(SocketOptions.SO_TIMEOUT);
 		final Cipher cipher = RsaUtils.getDecryptCipher(votifier.getConfig().getKeyPair().getPrivate());
 		running = true;
 		notifyListeners(new ServerStartedEvent());
@@ -73,7 +75,7 @@ public class VanillaVotifierServer implements Server {
 							public void run() {
 								try {
 									notifyListeners(new ConnectionEstablishedEvent(socket));
-									socket.setSoTimeout(10000); // SocketException: handled by try/catch.
+									socket.setSoTimeout(SocketOptions.SO_TIMEOUT); // SocketException: handled by try/catch.
 									InputStream in = socket.getInputStream(); // IOException: handled by try/catch.
 									byte[] request = new byte[253];
 									in.read(request); // IOException: handled by try/catch.
@@ -118,16 +120,13 @@ public class VanillaVotifierServer implements Server {
 								}
 							}
 						}).start();
+					} catch (SocketTimeoutException e) {
+						// Don't care.
 					} catch (Exception e) {
 						if (running) {
 							notifyListeners(new ConnectionEstablishExceptionEvent(e));
 						} // else {} To hide error while stopping.
 					}
-				}
-				try {
-					serverSocket.close();
-				} catch (Exception e) {
-					notifyListeners(new ServerCloseExceptionEvent(e));
 				}
 				notifyListeners(new ServerStoppedEvent());
 			}
@@ -140,7 +139,6 @@ public class VanillaVotifierServer implements Server {
 			throw new IllegalStateException("Server isn't running!");
 		}
 		notifyListeners(new ServerStoppingEvent());
-		serverSocket.close();
 		running = false;
 	}
 

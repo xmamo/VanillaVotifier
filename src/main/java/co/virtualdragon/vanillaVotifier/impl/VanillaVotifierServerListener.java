@@ -13,7 +13,6 @@ import co.virtualdragon.vanillaVotifier.event.server.ConnectionInputStreamCloseE
 import co.virtualdragon.vanillaVotifier.event.server.InvalidRequestEvent;
 import co.virtualdragon.vanillaVotifier.event.server.RconExceptionEvent;
 import co.virtualdragon.vanillaVotifier.event.server.SendingRconCommandEvent;
-import co.virtualdragon.vanillaVotifier.event.server.ServerCloseExceptionEvent;
 import co.virtualdragon.vanillaVotifier.event.server.ServerStartedEvent;
 import co.virtualdragon.vanillaVotifier.event.server.ServerStartingEvent;
 import co.virtualdragon.vanillaVotifier.event.server.ServerStoppedEvent;
@@ -102,10 +101,6 @@ public class VanillaVotifierServerListener implements Listener {
 			HashMap<String, String> substitutions = new HashMap<String, String>();
 			substitutions.put("exception", ExceptionUtils.getStackTrace(((ConnectionEstablishExceptionEvent) event).getException()));
 			votifier.getOutputWriter().println(new StrSubstitutor(substitutions).replace(votifier.getLanguagePack().getString("s30")));
-		} else if (event instanceof ServerCloseExceptionEvent) {
-			HashMap<String, String> substitutions = new HashMap<String, String>();
-			substitutions.put("exception", ExceptionUtils.getStackTrace(((ServerCloseExceptionEvent) event).getException()));
-			votifier.getOutputWriter().println(new StrSubstitutor(substitutions).replace(votifier.getLanguagePack().getString("s12")));
 		} else if (event instanceof ServerStoppingEvent) {
 			votifier.getOutputWriter().println(votifier.getLanguagePack().getString("s22"));
 		} else if (event instanceof ServerStoppedEvent) {
