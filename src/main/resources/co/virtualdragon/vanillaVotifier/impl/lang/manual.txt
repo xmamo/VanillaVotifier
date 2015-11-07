@@ -37,9 +37,11 @@ here.
 RCon.
 
 ----------------------------------- COMMANDS -----------------------------------
-To start out, there are two really basic and simple commands: "stop" and
-"reload". There's not much to say here: "stop" stops the VanillaVotifier server,
-while "reload" forces VanillaVotifier to reload the config.
+To start out, there are three really basic and simple commands: "stop",
+"reload" and "info". There's not much to say here: "stop" stops the
+VanillaVotifier server, "reload" forces VanillaVotifier to reload its config,
+"info" displays some information about VanillaVotifier itself (like its version
+and the third party libraries used).
 
 A more advanced command is "gen-key-pair". All votifier sites and servers (like
 this one) use RSA, basically a way to send data securely between hosts. To
