@@ -15,8 +15,8 @@ public class JsonUtils {
 					break;
 				}
 			}
-			prettyString += prettyStringLine + "\n";
+			prettyString += prettyStringLine + System.lineSeparator();
 		}
-		return prettyString.substring(0, prettyString.length() - 1);
+		return prettyString.substring(0, prettyString.length() - System.lineSeparator().length());
 	}
 }

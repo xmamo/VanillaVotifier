@@ -1,12 +1,8 @@
 package co.virtualdragon.vanillaVotifier.server.event;
 
-public interface RequestEvent extends MessageEvent, SocketEvent {
+import co.virtualdragon.vanillaVotifier.Vote;
 
-	String getServiceName();
+public interface RequestEvent extends SocketEvent {
 
-	String getUserName();
-
-	String getAddress();
-
-	String getTimeStamp();
+	Vote getVote();
 }
