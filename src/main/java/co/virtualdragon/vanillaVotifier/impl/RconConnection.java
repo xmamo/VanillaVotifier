@@ -13,7 +13,8 @@ import java.util.Random;
 
 public class RconConnection implements Rcon {
 
-	private Votifier votifier;
+	private final Votifier votifier;
+	
 	private Socket socket;
 	private int requestId;
 

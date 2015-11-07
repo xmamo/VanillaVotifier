@@ -5,16 +5,13 @@ import co.virtualdragon.vanillaVotifier.Config;
 import co.virtualdragon.vanillaVotifier.LanguagePack;
 import co.virtualdragon.vanillaVotifier.OutputWriter;
 import co.virtualdragon.vanillaVotifier.Rcon;
-import co.virtualdragon.vanillaVotifier.server.Server;
+import co.virtualdragon.vanillaVotifier.Server;
 import co.virtualdragon.vanillaVotifier.Tester;
 import co.virtualdragon.vanillaVotifier.Votifier;
-import co.virtualdragon.vanillaVotifier.impl.server.VanillaVotifierServer;
 import java.io.File;
 import java.net.BindException;
 import java.util.HashMap;
 import java.util.Scanner;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.text.StrSubstitutor;
 import org.json.JSONException;
@@ -40,6 +37,11 @@ public class VanillaVotifier implements Votifier {
 	}
 
 	public static void main(String[] args) {
+		String[] javaVersion = System.getProperty("java.version").split("\\.");
+		if (!(javaVersion.length >= 1 && Integer.parseInt(javaVersion[0]) >= 1 && javaVersion.length >= 2 && Integer.parseInt(javaVersion[1]) >= 6)) {
+			System.err.println("You need at least Java 1.6 to run this program! Current version: " + System.getProperty("java.version") + ".");
+			return;
+		}
 		VanillaVotifier votifier = new VanillaVotifier();
 		if (!loadConfig(votifier)) {
 			return;
