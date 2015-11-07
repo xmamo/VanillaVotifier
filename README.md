@@ -3,7 +3,6 @@ For sure you know about the Votifier plugin Bukkit utilizes to track votes on si
 
 <h2>Requisites</h2>
 There are only two requisites to run VanillaVotifier: to have a server which is able to run the VanillaVotifier program (you can usually archive this with a VPS or dedicated server), and, of course, your Minecraft server has to have RCon enabled and set up.
-Java 8 is needed to make this program work!
 
 <h2>Installation</h2>
 You can download the lastest version of VanillaVotifier from <a href="https://github.com/MamosLab/VanillaVotifier/releases" target="_blank">here</a> and upload it to your server. If you're on Linux, you may like to do it through the following command: <code>wget $(curl -s https://api.github.com/repos/MamosLab/VanillaVotifier/releases | grep -m 1 '"browser_download_url": ' | sed 's/.*"browser_download_url": "//' | sed 's/.$//')</code>.

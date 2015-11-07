@@ -2,7 +2,7 @@ package co.virtualdragon.vanillaVotifier.event;
 
 public abstract class AbstractExceptionEvent implements ExceptionEvent {
 
-	private Exception exception;
+	private final Exception exception;
 
 	public AbstractExceptionEvent(Exception exception) {
 		this.exception = exception;
