@@ -1,10 +1,10 @@
 ===================================== INFO =====================================
 VanillaVotifier ${pom.version}, developed by VirtualDragon (AKA Mamo, AKA Matteo Morena).
 Third party libraries used:
- * Bouncy Castle Crypto API (org.bouncycastle -> bcprov-jdk15on-153.jar),
+ * Bouncy Castle Crypto API (org.bouncycastle -> bcprov-jdk15on, v. 1.52),
    licensed under the MIT license: https://www.bouncycastle.org/license.html
- * Commons Lang (org.apache.commons -> commons-lang3), licensed undet the Apache
-   License, Version 2.0: http://www.apache.org/licenses/
- * JSON in Java (org.json -> json), licensed under a custom license:
-   http://www.json.org/license.html
+ * Commons Lang (org.apache.commons -> commons-lang3, v. 3.4), licensed under
+   the Apache License v. 2.0: http://www.apache.org/licenses/
+ * JSON in Java (org.json -> json, v. 320140107), licensed under a custom
+   license: http://www.json.org/license.html
 ================================================================================
