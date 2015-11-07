@@ -59,6 +59,6 @@ replaced with the IGN of the user who has voted, his IP address, and the time
 stamp he has voted on. For example, let's pretend that Notch has voted for your
 server on MCSL the day 06/07/2015 on 22:40:16, and that his IP is 111.23.8.52:
 we would have to write the command
-test-querey VOTE	Random service	Notch	127.0.0.1	2015-07-06 22:40:16
+test-query VOTE	Random service	Notch	127.0.0.1	2015-07-06 22:40:16
 To make things easier, a similar result can be achieved with "test-vote Notch".
 ================================================================================
