@@ -6,7 +6,7 @@ first time you're using VanillaVotifier.
 The configuration for VanillaVotifier is automatically generated on the first
 startup and located in the same folder you started the program from, with name
 "config.json". Since the configuration file gets read by VanillaVotifier only on
-startup, you may use the "restart" command to force the program to reload the
+startup, you may use the "reload" command to force the program to reload the
 settings.
 Here is a short description of all settings you can configure in the file.
 
@@ -38,8 +38,8 @@ RCon.
 
 ----------------------------------- COMMANDS -----------------------------------
 To start out, there are two really basic and simple commands: "stop" and
-"restart". There's not much to say here, they're pretty self-explanatory: "stop"
-stops the VanillaVotifier server, while "restart" restarts it.
+"reload". There's not much to say here: "stop" stops the VanillaVotifier server,
+while "reload" forces VanillaVotifier to reload the config.
 
 A more advanced command is "gen-key-pair". All votifier sites and servers (like
 this one) use RSA, basically a way to send data securely between hosts. To

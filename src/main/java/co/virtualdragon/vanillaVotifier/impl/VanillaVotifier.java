@@ -10,10 +10,14 @@ import co.virtualdragon.vanillaVotifier.Tester;
 import co.virtualdragon.vanillaVotifier.Votifier;
 import co.virtualdragon.vanillaVotifier.impl.server.VanillaVotifierServer;
 import java.io.File;
+import java.net.BindException;
 import java.util.HashMap;
 import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.text.StrSubstitutor;
+import org.json.JSONException;
 
 public class VanillaVotifier implements Votifier {
 
@@ -37,17 +41,12 @@ public class VanillaVotifier implements Votifier {
 
 	public static void main(String[] args) {
 		VanillaVotifier votifier = new VanillaVotifier();
-		votifier.getOutputWriter().println(votifier.getLanguagePack().getString("s24"));
-		try {
-			votifier.getConfig().load();
-		} catch (Exception e) {
-			HashMap<String, String> substitutions = new HashMap<String, String>();
-			substitutions.put("exception", ExceptionUtils.getStackTrace(e));
-			votifier.getOutputWriter().println(new StrSubstitutor(substitutions).replace(votifier.getLanguagePack().getString("s15")));
+		if (!loadConfig(votifier)) {
 			return;
 		}
-		votifier.getOutputWriter().println(votifier.getLanguagePack().getString("s25"));
-		start(votifier);
+		if (!start(votifier)) {
+			return;
+		}
 		Scanner in = new Scanner(System.in);
 		while (true) {
 			String command = in.nextLine();
@@ -58,10 +57,11 @@ public class VanillaVotifier implements Votifier {
 				} else {
 					votifier.getOutputWriter().println(votifier.getLanguagePack().getString("s17"));
 				}
-			} else if (command.equalsIgnoreCase("restart") || command.toLowerCase().startsWith("restart ")) {
+			} else if (command.equalsIgnoreCase("reload") || command.toLowerCase().startsWith("reload ")) {
 				if (command.split(" ").length == 1) {
-					stop(votifier);
-					start(votifier);
+					if (!loadConfig(votifier)) {
+						return;
+					}
 				} else {
 					votifier.getOutputWriter().println(votifier.getLanguagePack().getString("s32"));
 				}
@@ -129,7 +129,7 @@ public class VanillaVotifier implements Votifier {
 				} else {
 					votifier.getOutputWriter().println(votifier.getLanguagePack().getString("s32"));
 				}
-			} else if (command.equalsIgnoreCase("help") || command.toLowerCase().startsWith("manual ")) {
+			} else if (command.equalsIgnoreCase("manual") || command.toLowerCase().startsWith("manual ")) {
 				if (command.split(" ").length == 1) {
 					votifier.getOutputWriter().println(votifier.getLanguagePack().getString("s36"));
 				} else {
@@ -141,24 +141,50 @@ public class VanillaVotifier implements Votifier {
 		}
 	}
 
-	private static void stop(Votifier votifier) {
+	private static boolean loadConfig(Votifier votifier) {
+		votifier.getOutputWriter().println(votifier.getLanguagePack().getString("s24"));
+		try {
+			votifier.getConfig().load();
+		} catch (Exception e) {
+			HashMap<String, String> substitutions = new HashMap<String, String>();
+			if (e instanceof JSONException) {
+				substitutions.put("exception", e.toString());
+			} else {
+				substitutions.put("exception", ExceptionUtils.getStackTrace(e));
+			}
+			votifier.getOutputWriter().println(new StrSubstitutor(substitutions).replace(votifier.getLanguagePack().getString("s15")));
+			return false;
+		}
+		votifier.getOutputWriter().println(votifier.getLanguagePack().getString("s25"));
+		return true;
+	}
+
+	private static boolean stop(Votifier votifier) {
 		try {
 			votifier.getServer().stop();
+			return true;
 		} catch (Exception e) {
 			HashMap<String, String> substitutions = new HashMap<String, String>();
 			substitutions.put("exception", ExceptionUtils.getStackTrace(e));
 			votifier.getOutputWriter().println(new StrSubstitutor(substitutions).replace(votifier.getLanguagePack().getString("s12")));
 		}
+		return false;
 	}
 
-	private static void start(Votifier votifier) {
+	private static boolean start(Votifier votifier) {
 		try {
 			votifier.getServer().start();
+			return true;
+		} catch (BindException e) {
+			HashMap<String, String> substitutions = new HashMap<String, String>();
+			substitutions.put("port", votifier.getConfig().getInetSocketAddress().getPort() + "");
+			votifier.getOutputWriter().println(new StrSubstitutor(substitutions).replace(votifier.getLanguagePack().getString("s38")));
 		} catch (Exception e) {
 			HashMap<String, String> substitutions = new HashMap<String, String>();
 			substitutions.put("exception", ExceptionUtils.getStackTrace(e));
 			votifier.getOutputWriter().println(new StrSubstitutor(substitutions).replace(votifier.getLanguagePack().getString("s13")));
 		}
+		return false;
 	}
 
 	@Override

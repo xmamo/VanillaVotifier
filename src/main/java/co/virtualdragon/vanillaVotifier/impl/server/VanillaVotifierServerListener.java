@@ -19,6 +19,7 @@ import co.virtualdragon.vanillaVotifier.impl.server.event.ServerStartingEvent;
 import co.virtualdragon.vanillaVotifier.impl.server.event.ServerStoppedEvent;
 import co.virtualdragon.vanillaVotifier.impl.server.event.ServerStoppingEvent;
 import co.virtualdragon.vanillaVotifier.impl.server.event.VoteEvent;
+import java.net.ConnectException;
 import java.util.HashMap;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.text.StrSubstitutor;
@@ -60,6 +61,8 @@ public class VanillaVotifierServerListener implements Listener {
 			Exception exception = ((RconExceptionEvent) event).getException();
 			if (exception.getMessage() != null && exception.getMessage().equals("Invalid password.")) {
 				votifier.getOutputWriter().println(votifier.getLanguagePack().getString("s7"));
+			} else if (exception instanceof ConnectException) {
+				votifier.getOutputWriter().println(votifier.getLanguagePack().getString("s39"));
 			} else {
 				substitutions.put("exception", ExceptionUtils.getStackTrace(exception));
 				votifier.getOutputWriter().println(new StrSubstitutor(substitutions).replace(votifier.getLanguagePack().getString("s28")));
