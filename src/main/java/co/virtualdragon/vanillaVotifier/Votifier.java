@@ -1,7 +1,5 @@
 package co.virtualdragon.vanillaVotifier;
 
-import co.virtualdragon.vanillaVotifier.server.Server;
-
 public interface Votifier {
 
 	LanguagePack getLanguagePack();

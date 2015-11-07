@@ -1,28 +1,27 @@
-package co.virtualdragon.vanillaVotifier.impl.server;
+package co.virtualdragon.vanillaVotifier.impl;
 
 import co.virtualdragon.vanillaVotifier.Listener;
-import co.virtualdragon.vanillaVotifier.server.Server;
+import co.virtualdragon.vanillaVotifier.Server;
 import co.virtualdragon.vanillaVotifier.Votifier;
 import co.virtualdragon.vanillaVotifier.event.Event;
-import co.virtualdragon.vanillaVotifier.impl.VanillaVotifierVote;
-import co.virtualdragon.vanillaVotifier.impl.server.event.CommandResponseEvent;
-import co.virtualdragon.vanillaVotifier.impl.server.event.ComunicationExceptionEvent;
-import co.virtualdragon.vanillaVotifier.impl.server.event.ConnectionCloseExceptionEvent;
-import co.virtualdragon.vanillaVotifier.impl.server.event.ConnectionClosedEvent;
-import co.virtualdragon.vanillaVotifier.impl.server.event.ConnectionEstablishExceptionEvent;
-import co.virtualdragon.vanillaVotifier.impl.server.event.ConnectionEstablishedEvent;
-import co.virtualdragon.vanillaVotifier.impl.server.event.ConnectionInputStreamCloseExceptionEvent;
-import co.virtualdragon.vanillaVotifier.impl.server.event.DecryptedInputReceivedEvent;
-import co.virtualdragon.vanillaVotifier.impl.server.event.EncryptedInputReceivedEvent;
-import co.virtualdragon.vanillaVotifier.impl.server.event.InvalidRequestEvent;
-import co.virtualdragon.vanillaVotifier.impl.server.event.RconExceptionEvent;
-import co.virtualdragon.vanillaVotifier.impl.server.event.SendingRconCommandEvent;
-import co.virtualdragon.vanillaVotifier.impl.server.event.ServerCloseExceptionEvent;
-import co.virtualdragon.vanillaVotifier.impl.server.event.ServerStartedEvent;
-import co.virtualdragon.vanillaVotifier.impl.server.event.ServerStartingEvent;
-import co.virtualdragon.vanillaVotifier.impl.server.event.ServerStoppedEvent;
-import co.virtualdragon.vanillaVotifier.impl.server.event.ServerStoppingEvent;
-import co.virtualdragon.vanillaVotifier.impl.server.event.VoteEvent;
+import co.virtualdragon.vanillaVotifier.event.server.CommandResponseEvent;
+import co.virtualdragon.vanillaVotifier.event.server.ComunicationExceptionEvent;
+import co.virtualdragon.vanillaVotifier.event.server.ConnectionCloseExceptionEvent;
+import co.virtualdragon.vanillaVotifier.event.server.ConnectionClosedEvent;
+import co.virtualdragon.vanillaVotifier.event.server.ConnectionEstablishExceptionEvent;
+import co.virtualdragon.vanillaVotifier.event.server.ConnectionEstablishedEvent;
+import co.virtualdragon.vanillaVotifier.event.server.ConnectionInputStreamCloseExceptionEvent;
+import co.virtualdragon.vanillaVotifier.event.server.DecryptedInputReceivedEvent;
+import co.virtualdragon.vanillaVotifier.event.server.EncryptedInputReceivedEvent;
+import co.virtualdragon.vanillaVotifier.event.server.InvalidRequestEvent;
+import co.virtualdragon.vanillaVotifier.event.server.RconExceptionEvent;
+import co.virtualdragon.vanillaVotifier.event.server.SendingRconCommandEvent;
+import co.virtualdragon.vanillaVotifier.event.server.ServerCloseExceptionEvent;
+import co.virtualdragon.vanillaVotifier.event.server.ServerStartedEvent;
+import co.virtualdragon.vanillaVotifier.event.server.ServerStartingEvent;
+import co.virtualdragon.vanillaVotifier.event.server.ServerStoppedEvent;
+import co.virtualdragon.vanillaVotifier.event.server.ServerStoppingEvent;
+import co.virtualdragon.vanillaVotifier.event.server.VoteEvent;
 import co.virtualdragon.vanillaVotifier.util.RsaUtils;
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,9 +37,9 @@ import org.apache.commons.lang3.text.StrSubstitutor;
 public class VanillaVotifierServer implements Server {
 
 	private final Votifier votifier;
-	private boolean running;
 	private final HashSet<Listener> listeners;
-
+	
+	private boolean running;
 	private ServerSocket serverSocket;
 
 	{

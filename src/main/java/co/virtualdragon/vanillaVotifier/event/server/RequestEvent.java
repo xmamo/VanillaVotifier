@@ -1,4 +1,4 @@
-package co.virtualdragon.vanillaVotifier.server.event;
+package co.virtualdragon.vanillaVotifier.event.server;
 
 import co.virtualdragon.vanillaVotifier.Vote;
 

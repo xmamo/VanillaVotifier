@@ -1,4 +1,4 @@
-package co.virtualdragon.vanillaVotifier.impl.server.event;
+package co.virtualdragon.vanillaVotifier.event.server;
 
 import co.virtualdragon.vanillaVotifier.event.AbstractExceptionEvent;
 

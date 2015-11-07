@@ -1,6 +1,5 @@
-package co.virtualdragon.vanillaVotifier.impl.server.event;
+package co.virtualdragon.vanillaVotifier.event.server;
 
-import co.virtualdragon.vanillaVotifier.server.event.SocketEvent;
 import co.virtualdragon.vanillaVotifier.event.AbstractExceptionEvent;
 import java.net.Socket;
 
