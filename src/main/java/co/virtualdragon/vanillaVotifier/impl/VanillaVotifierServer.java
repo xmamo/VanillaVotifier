@@ -1,3 +1,19 @@
+/* 
+ * Copyright (C) 2015 VirtualDragon
+ *
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program. If not, see <http://www.gnu.org/licenses/>.
+ */
 package co.virtualdragon.vanillaVotifier.impl;
 
 import co.virtualdragon.vanillaVotifier.Listener;
@@ -11,6 +27,7 @@ import co.virtualdragon.vanillaVotifier.event.server.ConnectionClosedEvent;
 import co.virtualdragon.vanillaVotifier.event.server.ConnectionEstablishExceptionEvent;
 import co.virtualdragon.vanillaVotifier.event.server.ConnectionEstablishedEvent;
 import co.virtualdragon.vanillaVotifier.event.server.ConnectionInputStreamCloseExceptionEvent;
+import co.virtualdragon.vanillaVotifier.event.server.DecryptInputExceptionEvent;
 import co.virtualdragon.vanillaVotifier.event.server.DecryptedInputReceivedEvent;
 import co.virtualdragon.vanillaVotifier.event.server.EncryptedInputReceivedEvent;
 import co.virtualdragon.vanillaVotifier.event.server.InvalidRequestEvent;
@@ -22,16 +39,18 @@ import co.virtualdragon.vanillaVotifier.event.server.ServerStoppedEvent;
 import co.virtualdragon.vanillaVotifier.event.server.ServerStoppingEvent;
 import co.virtualdragon.vanillaVotifier.event.server.VoteEvent;
 import co.virtualdragon.vanillaVotifier.util.RsaUtils;
+import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketOptions;
 import java.net.SocketTimeoutException;
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
+import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import org.apache.commons.lang3.text.StrSubstitutor;
 
@@ -76,12 +95,12 @@ public class VanillaVotifierServer implements Server {
 								try {
 									notifyListeners(new ConnectionEstablishedEvent(socket));
 									socket.setSoTimeout(SocketOptions.SO_TIMEOUT); // SocketException: handled by try/catch.
-									InputStream in = socket.getInputStream(); // IOException: handled by try/catch.
+									BufferedInputStream in = new BufferedInputStream(socket.getInputStream()); // IOException: handled by try/catch.
 									byte[] request = new byte[253];
 									in.read(request); // IOException: handled by try/catch.
-									notifyListeners(new EncryptedInputReceivedEvent(socket, new String(request, "UTF-8"))); // UnsupportedEncodingException: can't happen.
-									request = cipher.doFinal(request); // Exception: handled by try/catch.
-									String requestString = new String(request, "UTF-8"); // UnsupportedEncodingException: can't happen.
+									notifyListeners(new EncryptedInputReceivedEvent(socket, new String(request, StandardCharsets.UTF_8))); // UnsupportedEncodingException: can't happen.
+									request = cipher.doFinal(request); // IllegalBlockSizeException: can't happen.
+									String requestString = new String(request, StandardCharsets.UTF_8); // UnsupportedEncodingException: can't happen.
 									notifyListeners(new DecryptedInputReceivedEvent(socket, requestString));
 									String[] requestArray = requestString.split("\n");
 									if ((requestArray.length == 5 || requestArray.length == 6) && requestArray[0].equals("VOTE")) {
@@ -109,14 +128,16 @@ public class VanillaVotifierServer implements Server {
 									} catch (Exception e) { // IOException: catching just in case. Continue even if stream doesn't close.
 										notifyListeners(new ConnectionInputStreamCloseExceptionEvent(socket, e));
 									}
-									try {
-										socket.close();
-										notifyListeners(new ConnectionClosedEvent(socket));
-									} catch (Exception e) { // IOException: catching just in case. Continue even if socket doesn't close.
-										notifyListeners(new ConnectionCloseExceptionEvent(socket, e));
-									}
+								} catch (BadPaddingException e) {
+									notifyListeners(new DecryptInputExceptionEvent(e));
 								} catch (Exception e) {
 									notifyListeners(new ComunicationExceptionEvent(e));
+								}
+								try {
+									socket.close();
+									notifyListeners(new ConnectionClosedEvent(socket));
+								} catch (Exception e) { // IOException: catching just in case. Continue even if socket doesn't close.
+									notifyListeners(new ConnectionCloseExceptionEvent(socket, e));
 								}
 							}
 						}).start();
@@ -140,6 +161,7 @@ public class VanillaVotifierServer implements Server {
 		}
 		notifyListeners(new ServerStoppingEvent());
 		running = false;
+		serverSocket.close();
 	}
 
 	@Override
