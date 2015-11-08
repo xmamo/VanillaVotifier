@@ -1,3 +1,19 @@
+/* 
+ * Copyright (C) 2015 VirtualDragon
+ *
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program. If not, see <http://www.gnu.org/licenses/>.
+ */
 package co.virtualdragon.vanillaVotifier.impl;
 
 import co.virtualdragon.vanillaVotifier.CommandSender;
@@ -10,6 +26,7 @@ import co.virtualdragon.vanillaVotifier.Tester;
 import co.virtualdragon.vanillaVotifier.Votifier;
 import java.io.File;
 import java.net.BindException;
+import java.net.SocketOptions;
 import java.util.HashMap;
 import java.util.Scanner;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -43,10 +60,8 @@ public class VanillaVotifier implements Votifier {
 			return;
 		}
 		VanillaVotifier votifier = new VanillaVotifier();
-		if (!loadConfig(votifier)) {
-			return;
-		}
-		if (!start(votifier)) {
+		votifier.getOutputWriter().println(votifier.getLanguagePack().getString("s42"));
+		if (!(loadConfig(votifier) && startServer(votifier))) {
 			return;
 		}
 		Scanner in = new Scanner(System.in);
@@ -54,14 +69,24 @@ public class VanillaVotifier implements Votifier {
 			String command = in.nextLine();
 			if (command.equalsIgnoreCase("stop") || command.toLowerCase().startsWith("stop ")) {
 				if (command.split(" ").length == 1) {
-					stop(votifier);
+					stopServer(votifier);
 					break;
 				} else {
 					votifier.getOutputWriter().println(votifier.getLanguagePack().getString("s17"));
 				}
-			} else if (command.equalsIgnoreCase("reload") || command.toLowerCase().startsWith("reload ")) {
+			} else if (command.equalsIgnoreCase("restart") || command.toLowerCase().startsWith("restart ")) {
 				if (command.split(" ").length == 1) {
-					if (!loadConfig(votifier)) {
+					if (!stopServer(votifier)) {
+						System.exit(0); // "return" somehow isn't enough.
+						return;
+					}
+					try {
+						Thread.sleep(SocketOptions.SO_TIMEOUT);
+					} catch (InterruptedException e) {
+						// Can't happen.
+					}
+					if (!(loadConfig(votifier) && startServer(votifier))) {
+						System.exit(0); // "return" somehow isn't enough.
 						return;
 					}
 				} else {
@@ -113,10 +138,9 @@ public class VanillaVotifier implements Votifier {
 					votifier.getOutputWriter().println(votifier.getLanguagePack().getString("s26"));
 				}
 			} else if (command.equalsIgnoreCase("test-query") || command.toLowerCase().startsWith("test-query ")) {
-				String[] commandArgs = command.split(" ");
-				if (commandArgs.length == 2) {
+				if (command.split(" ").length >= 2) {
 					try {
-						votifier.getTester().testQuery(commandArgs[1].replaceAll("\t", "\n"));
+						votifier.getTester().testQuery(command.replaceFirst("test-query ", "").replaceAll("\t", "\n"));
 					} catch (Exception e) {
 						HashMap<String, String> substitutions = new HashMap<String, String>();
 						substitutions.put("exception", ExceptionUtils.getStackTrace(e));
@@ -143,6 +167,12 @@ public class VanillaVotifier implements Votifier {
 				} else {
 					votifier.getOutputWriter().println(votifier.getLanguagePack().getString("s41"));
 				}
+			} else if (command.equalsIgnoreCase("license") || command.toLowerCase().startsWith("license ")) {
+				if (command.split(" ").length == 1) {
+					votifier.getOutputWriter().println(votifier.getLanguagePack().getString("s43"));
+				} else {
+					votifier.getOutputWriter().println(votifier.getLanguagePack().getString("s44"));
+				}
 			} else {
 				votifier.getOutputWriter().println(votifier.getLanguagePack().getString("s33"));
 			}
@@ -153,13 +183,14 @@ public class VanillaVotifier implements Votifier {
 		votifier.getOutputWriter().println(votifier.getLanguagePack().getString("s24"));
 		try {
 			votifier.getConfig().load();
+		} catch (JSONException e) {
+			HashMap<String, String> substitutions = new HashMap<String, String>();
+			substitutions.put("exception", e.getMessage().replaceAll("'", "\""));
+			votifier.getOutputWriter().println(new StrSubstitutor(substitutions).replace(votifier.getLanguagePack().getString("s45")));
+			return false;
 		} catch (Exception e) {
 			HashMap<String, String> substitutions = new HashMap<String, String>();
-			if (e instanceof JSONException) {
-				substitutions.put("exception", e.toString());
-			} else {
-				substitutions.put("exception", ExceptionUtils.getStackTrace(e));
-			}
+			substitutions.put("exception", ExceptionUtils.getStackTrace(e));
 			votifier.getOutputWriter().println(new StrSubstitutor(substitutions).replace(votifier.getLanguagePack().getString("s15")));
 			return false;
 		}
@@ -167,7 +198,7 @@ public class VanillaVotifier implements Votifier {
 		return true;
 	}
 
-	private static boolean stop(Votifier votifier) {
+	private static boolean stopServer(Votifier votifier) {
 		try {
 			votifier.getServer().stop();
 			return true;
@@ -179,7 +210,7 @@ public class VanillaVotifier implements Votifier {
 		return false;
 	}
 
-	private static boolean start(Votifier votifier) {
+	private static boolean startServer(Votifier votifier) {
 		try {
 			votifier.getServer().start();
 			return true;

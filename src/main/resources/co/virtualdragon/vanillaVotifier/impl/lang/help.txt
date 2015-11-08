@@ -1,13 +1,14 @@
 =============================== AVAIABLE COMMANDS ==============================
-gen-key-pair [key-size]	Generates new RSA keys for the VanillaVotifier server.
-			Key-size defaults to 2048.
-help			Shows all avaiable commands with usage explanation.
-info			Shows information about VanillaVotifier.
-manual			Displays a detailed manual of VanillaVotifier.
-reload			Reloads the configuration of VanillaVotifier.
-stop			Stops the VanillaVotifier server.
-test-query <query>	Sends an enciphered query to VanillaVotifier itself. For
-			debugging purposes only.
-test-vote <IGN>		Sends a vote as <IGN> to VanillaVotifier itself. For
-			debugging purposes only.
+gen-key-pair [key-size] Generates new RSA keys for the VanillaVotifier server.
+                        Key-size defaults to 2048.
+help                    Shows all avaiable commands with usage explanation.
+info                    Shows information about VanillaVotifier.
+license                 Displays VanillaVotifier's license.
+manual                  Displays a detailed manual of VanillaVotifier.
+restart                 Restarts VanillaVotifier.
+stop                    Stops the VanillaVotifier server.
+test-query <query>      Sends an enciphered query to VanillaVotifier itself. For
+                        debugging purposes only.
+test-vote <IGN>         Sends a vote as <IGN> to VanillaVotifier itself. For
+                        debugging purposes only.
 ================================================================================

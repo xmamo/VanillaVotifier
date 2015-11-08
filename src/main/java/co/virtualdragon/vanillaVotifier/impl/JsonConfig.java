@@ -1,6 +1,23 @@
+/* 
+ * Copyright (C) 2015 VirtualDragon
+ *
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program. If not, see <http://www.gnu.org/licenses/>.
+ */
 package co.virtualdragon.vanillaVotifier.impl;
 
 import co.virtualdragon.vanillaVotifier.Config;
+import co.virtualdragon.vanillaVotifier.util.JsonUtils;
 import co.virtualdragon.vanillaVotifier.util.RsaUtils;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -54,9 +71,12 @@ public class JsonConfig implements Config {
 			}
 			out.flush();
 			out.close();
-			in.close();
 		}
+		BufferedInputStream in = new BufferedInputStream(JsonConfig.class.getResourceAsStream("config.json"));
+		JSONObject defaultConfig = new JSONObject(new JSONTokener(in));
+		in.close();
 		JSONObject config = new JSONObject(new JSONTokener(new BufferedInputStream(new FileInputStream(configFile))));
+		boolean save = merge(defaultConfig, config);
 		configVersion = config.getInt("config-version");
 		inetSocketAddress = new InetSocketAddress(config.getString("ip"), config.getInt("port"));
 		publicKeyFile = new File(config.getJSONObject("key-pair-files").getString("public"));
@@ -85,6 +105,32 @@ public class JsonConfig implements Config {
 		rconInetSocketAddress = new InetSocketAddress(config.getJSONObject("rcon").getString("ip"), config.getJSONObject("rcon").getInt("port"));
 		rconPassword = config.getJSONObject("rcon").getString("password");
 		loaded = true;
+		if (save) {
+			save();
+		}
+	}
+
+	private boolean merge(JSONObject from, JSONObject to) {
+		boolean updated = false;
+		for (Object keyObject : from.keySet()) {
+			String key = (String) keyObject;
+			if (!to.has(key)) {
+				to.put(key, from.get(key));
+				updated = true;
+			}
+			if (from.get(key) instanceof JSONObject) {
+				if (merge(from.getJSONObject(key), to.getJSONObject(key))) {
+					updated = true;
+				}
+			}
+		}
+		return updated;
+	}
+
+	private void checkState() {
+		if (!isLoaded()) {
+			throw new IllegalStateException("Config isn't loaded yet!");
+		}
 	}
 
 	@Override
@@ -198,7 +244,7 @@ public class JsonConfig implements Config {
 		if (inetSocketAddress == null) {
 			inetSocketAddress = new InetSocketAddress("127.0.0.1", 25575);
 		}
-		rconInetSocketAddress = rconInetSocketAddress;
+		rconInetSocketAddress = inetSocketAddress;
 	}
 
 	@Override
@@ -234,11 +280,13 @@ public class JsonConfig implements Config {
 				put("password", getRconPassword());
 			}
 		});
-		BufferedWriter configWriter = new BufferedWriter(new FileWriter(configFile));
-		config.write(configWriter);
-		configWriter.flush();
-		configWriter.close();
-		configWriter = new BufferedWriter(new FileWriter(getPublicKeyFile()));
+		String configString = JsonUtils.jsonToPrettyString(config);
+		BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(configFile));
+		for (char c : configString.toCharArray()) {
+			out.write(c);
+		}
+		out.flush();
+		out.close();
 		PemWriter publicPemWriter = new PemWriter(new BufferedWriter(new FileWriter(getPublicKeyFile())));
 		publicPemWriter.writeObject(new PemObject("RSA PUBLIC KEY", getKeyPair().getPublic().getEncoded()));
 		publicPemWriter.flush();
@@ -247,11 +295,5 @@ public class JsonConfig implements Config {
 		privatePemWriter.writeObject(new PemObject("RSA PUBLIC KEY", getKeyPair().getPrivate().getEncoded()));
 		privatePemWriter.flush();
 		privatePemWriter.close();
-	}
-
-	private void checkState() {
-		if (!isLoaded()) {
-			throw new IllegalStateException("Config isn't loaded yet!");
-		}
 	}
 }

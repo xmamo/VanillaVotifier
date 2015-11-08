@@ -1,3 +1,19 @@
+/* 
+ * Copyright (C) 2015 VirtualDragon
+ *
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program. If not, see <http://www.gnu.org/licenses/>.
+ */
 package co.virtualdragon.vanillaVotifier.impl;
 
 import co.virtualdragon.vanillaVotifier.Listener;
@@ -10,6 +26,7 @@ import co.virtualdragon.vanillaVotifier.event.server.ConnectionClosedEvent;
 import co.virtualdragon.vanillaVotifier.event.server.ConnectionEstablishExceptionEvent;
 import co.virtualdragon.vanillaVotifier.event.server.ConnectionEstablishedEvent;
 import co.virtualdragon.vanillaVotifier.event.server.ConnectionInputStreamCloseExceptionEvent;
+import co.virtualdragon.vanillaVotifier.event.server.DecryptInputExceptionEvent;
 import co.virtualdragon.vanillaVotifier.event.server.InvalidRequestEvent;
 import co.virtualdragon.vanillaVotifier.event.server.RconExceptionEvent;
 import co.virtualdragon.vanillaVotifier.event.server.SendingRconCommandEvent;
@@ -93,6 +110,8 @@ public class VanillaVotifierServerListener implements Listener {
 			substitutions.put("port", connectionCloseException.getSocket().getPort() + "");
 			substitutions.put("exception", ExceptionUtils.getStackTrace(connectionCloseException.getException()));
 			votifier.getOutputWriter().println(new StrSubstitutor(substitutions).replace(votifier.getLanguagePack().getString("s11")));
+		} else if (event instanceof DecryptInputExceptionEvent) {
+			votifier.getOutputWriter().println(votifier.getLanguagePack().getString("s46"));
 		} else if (event instanceof ComunicationExceptionEvent) {
 			HashMap<String, String> substitutions = new HashMap<String, String>();
 			substitutions.put("exception", ExceptionUtils.getStackTrace(((ComunicationExceptionEvent) event).getException()));
