@@ -7,11 +7,14 @@ There are only two requisites to run VanillaVotifier: to have a server which is 
 <h2>Installation</h2>
 You can download the lastest version of VanillaVotifier from <a href="https://github.com/VirtualDragon/VanillaVotifier/releases/latest" target="_blank">here</a> and upload it to your server. If you're on Linux, you may like to do it through the following command: <code>wget $(curl -s https://api.github.com/repos/VirtualDragon/VanillaVotifier/releases | grep -m 1 '"browser_download_url": ' | sed 's/.*"browser_download_url": "//' | sed 's/.$//')</code>.
 
-Once downloaded, you can startup the program with <code>java -jar Vanilla_votifier.jar</code>. The program will generate a configuration file and halt immediately after. Please open the file and configure its settings. If you need help with the configuration, once you started VanillaVotifier you can type the command <code>manual</code>.
+Once downloaded, you can startup the program with <code>java -jar VanillaVotifier.jar</code>. Please open the file and configure its settings. Once done, type <code>reload</code> to reload the config. If you need help with the configuration, you can type the <code>manual</code> command.
 
 Please note that the port for VanillaVotifier configured has to be opened! In Linux, this can be achived with <code>iptables -I INPUT -p tcp --dport &lt;VanillaVotifier port&gt; -j ACCEPT</code>.
 
+<h2>Usage</h2>
+For a list of all possible commands, you can use the <code>help</code> command. For a more detailed explanation of what every command does, you can type <code>manual</code> to read through VanillaVotifier's manual, however if you don't want to start VanillaVotifier to read it, you can go <a href="https://raw.githubusercontent.com/VirtualDragon/VanillaVotifier/master/src/main/resources/co/virtualdragon/vanillaVotifier/impl/lang/manual.txt" target="_blank">here</a> instead.
+
 <h2>Any more questions? Did you find a bug or want a new feature?</h2>
-If you have any questions, please read through the manual of VanillaVotifier first (you can do this by typing the <code>manual</code> command while the program is running): this may already helps you out!
+If you have any questions, please read through the manual of VanillaVotifier first: this may already helps you out!
 
 If you find a bug or want a new feature, please post it on the <a href="https://github.com/VirtualDragon/VanillaVotifier/issues" target="_blank">issue tracker</a>.
