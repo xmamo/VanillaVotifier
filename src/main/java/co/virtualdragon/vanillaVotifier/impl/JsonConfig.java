@@ -82,7 +82,7 @@ public class JsonConfig implements Config {
 		publicKeyFile = new File(config.getJSONObject("key-pair-files").getString("public"));
 		privateKeyFile = new File(config.getJSONObject("key-pair-files").getString("private"));
 		if (!publicKeyFile.exists() || !privateKeyFile.exists()) {
-			KeyPair keyPair = RsaUtils.genKeyPair(2024);
+			KeyPair keyPair = RsaUtils.genKeyPair(2048);
 			PemWriter publicPemWriter = new PemWriter(new BufferedWriter(new FileWriter(publicKeyFile)));
 			publicPemWriter.writeObject(new PemObject("PUBLIC KEY", keyPair.getPublic().getEncoded()));
 			publicPemWriter.flush();

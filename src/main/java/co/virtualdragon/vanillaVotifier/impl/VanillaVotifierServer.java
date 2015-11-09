@@ -95,7 +95,7 @@ public class VanillaVotifierServer implements Server {
 									notifyListeners(new ConnectionEstablishedEvent(socket));
 									socket.setSoTimeout(SocketOptions.SO_TIMEOUT); // SocketException: handled by try/catch.
 									BufferedInputStream in = new BufferedInputStream(socket.getInputStream()); // IOException: handled by try/catch.
-									byte[] request = new byte[253];
+									byte[] request = new byte[256];
 									in.read(request); // IOException: handled by try/catch.
 									notifyListeners(new EncryptedInputReceivedEvent(socket, new String(request, StandardCharsets.UTF_8))); // UnsupportedEncodingException: can't happen.
 									request = cipher.doFinal(request); // IllegalBlockSizeException: can't happen.
