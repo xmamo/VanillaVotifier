@@ -67,7 +67,13 @@ public class JsonConfig implements Config {
 			BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(configFile));
 			int i;
 			while ((i = in.read()) != -1) {
-				out.write(i);
+				if (i != '\n') {
+					out.write(i);
+				} else {
+					for (int j = 0; j < System.lineSeparator().length(); j++) {
+						out.write(System.lineSeparator().charAt(j));
+					}
+				}
 			}
 			out.flush();
 			out.close();

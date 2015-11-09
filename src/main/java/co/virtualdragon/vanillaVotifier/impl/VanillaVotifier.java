@@ -29,7 +29,6 @@ import co.virtualdragon.vanillaVotifier.event.Event;
 import co.virtualdragon.vanillaVotifier.event.server.ServerStoppedEvent;
 import java.io.File;
 import java.net.BindException;
-import java.net.SocketOptions;
 import java.util.HashMap;
 import java.util.Scanner;
 import org.apache.commons.lang3.exception.ExceptionUtils;
