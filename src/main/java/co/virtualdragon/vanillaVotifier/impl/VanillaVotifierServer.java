@@ -47,9 +47,9 @@ import java.net.SocketOptions;
 import java.net.SocketTimeoutException;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import org.apache.commons.lang3.text.StrSubstitutor;
@@ -57,13 +57,13 @@ import org.apache.commons.lang3.text.StrSubstitutor;
 public class VanillaVotifierServer implements Server {
 
 	private final Votifier votifier;
-	private final HashSet<Listener> listeners;
+	private final ArrayList<Listener> listeners;
 
 	private boolean running;
 	private ServerSocket serverSocket;
 
 	{
-		listeners = new HashSet<Listener>();
+		listeners = new ArrayList<Listener>();
 		getListeners().add(new VanillaVotifierServerListener());
 	}
 
@@ -79,7 +79,6 @@ public class VanillaVotifierServer implements Server {
 		notifyListeners(new ServerStartingEvent());
 		serverSocket = new ServerSocket();
 		serverSocket.bind(votifier.getConfig().getInetSocketAddress());
-		serverSocket.setSoTimeout(SocketOptions.SO_TIMEOUT);
 		final Cipher cipher = RsaUtils.getDecryptCipher(votifier.getConfig().getKeyPair().getPrivate());
 		running = true;
 		notifyListeners(new ServerStartedEvent());
@@ -141,12 +140,10 @@ public class VanillaVotifierServer implements Server {
 								}
 							}
 						}).start();
-					} catch (SocketTimeoutException e) {
-						// Don't care.
 					} catch (Exception e) {
-						if (running) {
+						if (running) { // Show errors only while running, to hide error while stopping.
 							notifyListeners(new ConnectionEstablishExceptionEvent(e));
-						} // else {} To hide error while stopping.
+						}
 					}
 				}
 				notifyListeners(new ServerStoppedEvent());
@@ -170,13 +167,13 @@ public class VanillaVotifierServer implements Server {
 	}
 
 	@Override
-	public Set<Listener> getListeners() {
+	public List<Listener> getListeners() {
 		return listeners;
 	}
 
 	@Override
 	public void notifyListeners(Event event) {
-		for (Listener listener : listeners) {
+		for (Listener listener : (ArrayList<Listener>) listeners.clone()) {
 			listener.onEvent(event, votifier);
 		}
 	}

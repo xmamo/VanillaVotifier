@@ -5,7 +5,7 @@ help                    Shows all avaiable commands with usage explanation.
 info                    Shows information about VanillaVotifier.
 license                 Displays VanillaVotifier's license.
 manual                  Displays a detailed manual of VanillaVotifier.
-restart                 Restarts VanillaVotifier.
+restart                 Restarts the VanillaVotifier server.
 stop                    Stops the VanillaVotifier server.
 test-query <query>      Sends an enciphered query to VanillaVotifier itself. For
                         debugging purposes only.
