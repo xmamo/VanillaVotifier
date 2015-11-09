@@ -47,7 +47,12 @@ public class PropertiesLanguagePack implements LanguagePack {
 			int i;
 			try {
 				while ((i = in.read()) != -1) {
-					stringBuilder.append((char) i);
+					char c = (char) i;
+					if (c != '\n') {
+						stringBuilder.append(c);
+					} else {
+						stringBuilder.append(System.lineSeparator());
+					}
 				}
 				in.close();
 			} catch (IOException e) {
