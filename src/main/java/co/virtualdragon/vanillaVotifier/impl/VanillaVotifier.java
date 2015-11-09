@@ -19,11 +19,14 @@ package co.virtualdragon.vanillaVotifier.impl;
 import co.virtualdragon.vanillaVotifier.CommandSender;
 import co.virtualdragon.vanillaVotifier.Config;
 import co.virtualdragon.vanillaVotifier.LanguagePack;
+import co.virtualdragon.vanillaVotifier.Listener;
 import co.virtualdragon.vanillaVotifier.OutputWriter;
 import co.virtualdragon.vanillaVotifier.Rcon;
 import co.virtualdragon.vanillaVotifier.Server;
 import co.virtualdragon.vanillaVotifier.Tester;
 import co.virtualdragon.vanillaVotifier.Votifier;
+import co.virtualdragon.vanillaVotifier.event.Event;
+import co.virtualdragon.vanillaVotifier.event.server.ServerStoppedEvent;
 import java.io.File;
 import java.net.BindException;
 import java.net.SocketOptions;
@@ -80,15 +83,19 @@ public class VanillaVotifier implements Votifier {
 						System.exit(0); // "return" somehow isn't enough.
 						return;
 					}
-					try {
-						Thread.sleep(SocketOptions.SO_TIMEOUT);
-					} catch (InterruptedException e) {
-						// Can't happen.
-					}
-					if (!(loadConfig(votifier) && startServer(votifier))) {
-						System.exit(0); // "return" somehow isn't enough.
-						return;
-					}
+					Listener listener = new Listener() {
+						@Override
+						public void onEvent(Event event, Votifier votifier) {
+							if (event instanceof ServerStoppedEvent) {
+								if (loadConfig(votifier) && startServer(votifier)) {
+									votifier.getServer().getListeners().remove(this);
+								} else {
+									System.exit(0);
+								}
+							}
+						}
+					};
+					votifier.getServer().getListeners().add(listener);
 				} else {
 					votifier.getOutputWriter().println(votifier.getLanguagePack().getString("s32"));
 				}

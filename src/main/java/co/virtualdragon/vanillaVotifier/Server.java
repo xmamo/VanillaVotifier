@@ -19,7 +19,7 @@ package co.virtualdragon.vanillaVotifier;
 import co.virtualdragon.vanillaVotifier.event.Event;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
-import java.util.Set;
+import java.util.List;
 
 public interface Server {
 
@@ -29,7 +29,7 @@ public interface Server {
 
 	boolean isRunning();
 
-	Set<Listener> getListeners();
+	List<Listener> getListeners();
 
 	void notifyListeners(Event event);
 }
