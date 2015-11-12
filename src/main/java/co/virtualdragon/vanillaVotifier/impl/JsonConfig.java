@@ -32,7 +32,6 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.security.KeyPair;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemReader;
@@ -122,7 +121,7 @@ public class JsonConfig implements Config {
 		rconConfigs = new ArrayList<RconConfig>();
 		for (int i = 0; i < config.getJSONArray("rcon-list").length(); i++) {
 			JSONObject jsonObject = config.getJSONArray("rcon-list").getJSONObject(i);
-			JsonRconConfig rconConfig = new JsonRconConfig(new InetSocketAddress(jsonObject.getString("ip"), jsonObject.getInt("port")), jsonObject.getString("password"));
+			VanillaVotifierRconConfig rconConfig = new VanillaVotifierRconConfig(new InetSocketAddress(jsonObject.getString("ip"), jsonObject.getInt("port")), jsonObject.getString("password"));
 			for (int j = 0; j < jsonObject.getJSONArray("commands").length(); j++) {
 				rconConfig.getCommands().add(jsonObject.getJSONArray("commands").getString(j));
 			}
@@ -285,16 +284,5 @@ public class JsonConfig implements Config {
 		privatePemWriter.writeObject(new PemObject("RSA PRIVATE KEY", getKeyPair().getPrivate().getEncoded()));
 		privatePemWriter.flush();
 		privatePemWriter.close();
-	}
-
-	public static class JsonRconConfig extends AbstractRconConfig {
-
-		public JsonRconConfig(InetSocketAddress inetSocketAddress, String password) {
-			super(inetSocketAddress, password);
-		}
-
-		public JsonRconConfig(InetSocketAddress inetSocketAddress, String password, ArrayList<String> commands) {
-			super(inetSocketAddress, password, commands);
-		}
 	}
 }
