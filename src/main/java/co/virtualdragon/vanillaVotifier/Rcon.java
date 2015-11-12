@@ -16,10 +16,15 @@
  */
 package co.virtualdragon.vanillaVotifier;
 
+import co.virtualdragon.vanillaVotifier.Config.RconConfig;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
 public interface Rcon {
+	
+	RconConfig getRconConfig();
+	
+	void setRconConfig(RconConfig rconConfig);
 
 	int getRequestId();
 
@@ -27,7 +32,7 @@ public interface Rcon {
 
 	boolean isConnected();
 
-	Packet logIn(String password) throws UnsupportedEncodingException, IOException;
+	Packet logIn() throws UnsupportedEncodingException, IOException;
 
 	Packet sendRequest(Packet request) throws UnsupportedEncodingException, IOException;
 

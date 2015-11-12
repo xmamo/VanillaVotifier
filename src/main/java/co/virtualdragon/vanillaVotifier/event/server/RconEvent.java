@@ -17,24 +17,9 @@
 package co.virtualdragon.vanillaVotifier.event.server;
 
 import co.virtualdragon.vanillaVotifier.Rcon;
+import co.virtualdragon.vanillaVotifier.event.Event;
 
-public class SendingRconCommandEvent implements RconCommandEvent {
+public interface RconEvent extends Event {
 
-	private final Rcon rcon;
-	private final String command;
-
-	public SendingRconCommandEvent(Rcon rcon, String command) {
-		this.rcon = rcon;
-		this.command = command;
-	}
-
-	@Override
-	public Rcon getRcon() {
-		return rcon;
-	}
-
-	@Override
-	public String getCommand() {
-		return command;
-	}
+	Rcon getRcon();
 }

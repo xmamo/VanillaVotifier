@@ -16,12 +16,21 @@
  */
 package co.virtualdragon.vanillaVotifier.event.server;
 
-public class CommandResponseEvent implements MessageEvent {
+import co.virtualdragon.vanillaVotifier.Rcon;
 
+public class RconCommandResponseEvent implements RconEvent, MessageEvent {
+
+	private final Rcon rcon;
 	private final String message;
 
-	public CommandResponseEvent(String message) {
+	public RconCommandResponseEvent(Rcon rcon, String message) {
+		this.rcon = rcon;
 		this.message = message;
+	}
+
+	@Override
+	public Rcon getRcon() {
+		return rcon;
 	}
 
 	@Override

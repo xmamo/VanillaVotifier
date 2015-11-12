@@ -1,18 +1,20 @@
 {
-	"config-version": 2,
+	"config-version": 3,
 	"ip": "127.0.0.1",
 	"port": 8192,
 	"key-pair-files": {
 		"public": "public.pem",
 		"private": "private.pem"
 	},
-	"commands": [
-		"tellraw @a {\"text\":\"${user-name} has just voted for this server on ${service-name}. Thanks!\",\"color\":\"yellow\"}",
-		"give ${user-name} minecraft:cookie"
-	],
-	"rcon": {
-		"ip": "127.0.0.1",
-		"port": 25575,
-		"password": "password"
-	}
+	"rcon-list": [
+		{
+			"ip": "127.0.0.1",
+			"port": 25575,
+			"password": "password",
+			"commands": [
+				"tellraw @a {\"text\":\"${user-name} has just voted for this server on ${service-name}. Thanks!\",\"color\":\"yellow\"}",
+				"scoreboard players set ${user-name} voted 1"
+			]
+		}
+	]
 }

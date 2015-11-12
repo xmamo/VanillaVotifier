@@ -23,18 +23,19 @@ information, please read the COMMANDS section). Best thing would be to leave
 the default ones or to generate new ones through the "gen-key-pair" command.
 You can also look up some on-line tools to generate some RSA keys for yourself.
 
-"commands" are the Minecraft commands VanillaVotifier has to execute through
-RCon when somebody votes for your server. "${service-name}", "${user-name}",
-"${address}", "${time-stamp}" will be replaced with the value of the service the
-user has voted on (like MCSL), his IGN, his address, and the time stamp he has
-voted on (for more information, please read the COMMANDS section).
-
 "rcon/ip" and "rcon/port" are the IP and the port of the RCon-enabled Minecraft
 server you want VanillaVotifier to send commands to. Again, nothing special
 here.
 
 "rcon/password" is the password VanillaVotifier has to utilize to connect to
 RCon.
+
+"rcon/commands" are the Minecraft commands VanillaVotifier has to execute
+through RCon when somebody votes for your server. "${service-name}",
+"${user-name}", "${address}", "${time-stamp}" will be replaced with the value of
+the service the user has voted on (like MCSL), his IGN, his address, and the
+time stamp he has voted on (for more information, please read the COMMANDS
+section).
 
 ----------------------------------- COMMANDS -----------------------------------
 To start out, there are three really basic and simple commands: "stop",

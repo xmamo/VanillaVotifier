@@ -16,11 +16,20 @@
  */
 package co.virtualdragon.vanillaVotifier.event.server;
 
+import co.virtualdragon.vanillaVotifier.Rcon;
 import co.virtualdragon.vanillaVotifier.event.AbstractExceptionEvent;
 
-public class RconExceptionEvent extends AbstractExceptionEvent {
+public class RconExceptionEvent extends AbstractExceptionEvent implements RconEvent {
 
-	public RconExceptionEvent(Exception exception) {
+	private final Rcon rcon;
+
+	public RconExceptionEvent(Rcon rcon, Exception exception) {
 		super(exception);
+		this.rcon = rcon;
+	}
+
+	@Override
+	public Rcon getRcon() {
+		return rcon;
 	}
 }

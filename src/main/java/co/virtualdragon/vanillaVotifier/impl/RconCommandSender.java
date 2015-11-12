@@ -31,19 +31,19 @@ public class RconCommandSender implements CommandSender {
 	}
 
 	@Override
-	public String sendCommand(String command) throws Exception {
-		if (!votifier.getRcon().isConnected()) {
-			votifier.getRcon().connect();
+	public String sendCommand(Rcon rcon, String command) throws Exception {
+		if (!rcon.isConnected()) {
+			rcon.connect();
 		}
 		Packet packet = null;
 		try {
-			packet = votifier.getRcon().sendRequest(new Rcon.Packet(votifier.getRcon().getRequestId(), Rcon.Packet.Type.LOG_IN, votifier.getConfig().getRconPassword()));
+			packet = rcon.sendRequest(new Packet(rcon.getRequestId(), Packet.Type.LOG_IN, rcon.getRconConfig().getPassword()));
 		} catch (SocketException e) {
-			votifier.getRcon().connect();
-			packet = votifier.getRcon().sendRequest(new Rcon.Packet(votifier.getRcon().getRequestId(), Rcon.Packet.Type.LOG_IN, votifier.getConfig().getRconPassword()));
+			rcon.connect();
+			packet = rcon.sendRequest(new Packet(rcon.getRequestId(), Packet.Type.LOG_IN, rcon.getRconConfig().getPassword()));
 		}
 		if (packet.getRequestId() != -1) {
-			return votifier.getRcon().sendRequest(new Rcon.Packet(votifier.getRcon().getRequestId(), Rcon.Packet.Type.COMMAND, command)).getPayload();
+			return rcon.sendRequest(new Packet(rcon.getRequestId(), Packet.Type.COMMAND, command)).getPayload();
 		} else {
 			throw new Exception("Invalid password.");
 		}

@@ -16,6 +16,8 @@
  */
 package co.virtualdragon.vanillaVotifier;
 
+import java.util.List;
+
 public interface Votifier {
 
 	LanguagePack getLanguagePack();
@@ -28,7 +30,7 @@ public interface Votifier {
 
 	Server getServer();
 
-	Rcon getRcon();
+	List<Rcon> getRcons();
 
 	Tester getTester();
 }

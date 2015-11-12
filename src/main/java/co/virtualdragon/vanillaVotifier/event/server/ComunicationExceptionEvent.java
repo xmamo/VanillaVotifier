@@ -17,10 +17,19 @@
 package co.virtualdragon.vanillaVotifier.event.server;
 
 import co.virtualdragon.vanillaVotifier.event.AbstractExceptionEvent;
+import java.net.Socket;
 
-public class ComunicationExceptionEvent extends AbstractExceptionEvent {
+public class ComunicationExceptionEvent extends AbstractExceptionEvent implements SocketEvent {
 
-	public ComunicationExceptionEvent(Exception exception) {
+	private final Socket socket;
+
+	public ComunicationExceptionEvent(Socket socket, Exception exception) {
 		super(exception);
+		this.socket = socket;
+	}
+
+	@Override
+	public Socket getSocket() {
+		return socket;
 	}
 }
