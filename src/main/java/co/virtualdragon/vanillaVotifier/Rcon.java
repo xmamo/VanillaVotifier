@@ -21,9 +21,9 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
 public interface Rcon {
-	
+
 	RconConfig getRconConfig();
-	
+
 	void setRconConfig(RconConfig rconConfig);
 
 	int getRequestId();
@@ -32,64 +32,27 @@ public interface Rcon {
 
 	boolean isConnected();
 
-	Packet logIn() throws UnsupportedEncodingException, IOException;
+	VanillaVotifierPacket logIn() throws UnsupportedEncodingException, IOException;
 
-	Packet sendRequest(Packet request) throws UnsupportedEncodingException, IOException;
+	VanillaVotifierPacket sendRequest(VanillaVotifierPacket request) throws UnsupportedEncodingException, IOException;
 
-	public static class Packet {
+	public static interface Packet {
 
-		private int length;
-		private int requestId;
-		private Type type;
-		private String payload;
+		int getLength();
 
-		public Packet(int requestId, Type type, String payload) {
-			this(Integer.SIZE / 8 + Integer.SIZE / 8 + payload.length() + Byte.SIZE / 8 * 2, requestId, type, payload);
-		}
+		void setLength(int length);
 
-		public Packet(int length, int requestId, Type type, String payload) {
-			this.length = length;
-			this.requestId = requestId;
-			this.type = type;
-			this.payload = payload;
-		}
+		int getRequestId();
 
-		public int getLength() {
-			return length;
-		}
+		void setRequestId(int requestId);
 
-		public void setLength(int length) {
-			this.length = length;
-		}
+		Type getType();
 
-		public int getRequestId() {
-			return requestId;
-		}
+		void setType(Type type);
 
-		public void setRequestId(int requestId) {
-			this.requestId = requestId;
-		}
+		String getPayload();
 
-		public Type getType() {
-			return type;
-		}
-
-		public void setType(Type type) {
-			this.type = type;
-		}
-
-		public String getPayload() {
-			return payload;
-		}
-
-		public void setPayload(String payload) {
-			this.payload = payload;
-		}
-
-		@Override
-		public String toString() {
-			return length + "\t" + requestId + "\t" + type.toInt() + "\t" + payload;
-		}
+		void setPayload(String payload);
 
 		public static enum Type {
 
@@ -116,6 +79,70 @@ public interface Rcon {
 					throw new IllegalArgumentException("i has to be equal to 0, 2, or 3!");
 				}
 			}
+		}
+	}
+
+	public static class VanillaVotifierPacket implements Packet {
+
+		private int length;
+		private int requestId;
+		private Type type;
+		private String payload;
+
+		public VanillaVotifierPacket(int requestId, Type type, String payload) {
+			this(Integer.SIZE / 8 + Integer.SIZE / 8 + payload.length() + Byte.SIZE / 8 * 2, requestId, type, payload);
+		}
+
+		public VanillaVotifierPacket(int length, int requestId, Type type, String payload) {
+			this.length = length;
+			this.requestId = requestId;
+			this.type = type;
+			this.payload = payload;
+		}
+
+		@Override
+		public int getLength() {
+			return length;
+		}
+
+		@Override
+		public void setLength(int length) {
+			this.length = length;
+		}
+
+		@Override
+		public int getRequestId() {
+			return requestId;
+		}
+
+		@Override
+		public void setRequestId(int requestId) {
+			this.requestId = requestId;
+		}
+
+		@Override
+		public Type getType() {
+			return type;
+		}
+
+		@Override
+		public void setType(Type type) {
+			this.type = type;
+		}
+
+		@Override
+		public String getPayload() {
+			return payload;
+		}
+
+		@Override
+		public void setPayload(String payload) {
+			this.payload = payload;
+		}
+
+		@Override
+		public String toString() {
+			return length + "\t" + requestId + "\t" + type.toInt() + "\t" + payload;
 		}
 	}
 }

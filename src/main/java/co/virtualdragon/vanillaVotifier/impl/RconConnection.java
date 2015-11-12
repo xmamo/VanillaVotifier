@@ -18,8 +18,8 @@ package co.virtualdragon.vanillaVotifier.impl;
 
 import co.virtualdragon.vanillaVotifier.Config.RconConfig;
 import co.virtualdragon.vanillaVotifier.Rcon;
-import co.virtualdragon.vanillaVotifier.Rcon.Packet;
 import co.virtualdragon.vanillaVotifier.Rcon.Packet.Type;
+import co.virtualdragon.vanillaVotifier.Rcon.VanillaVotifierPacket;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
@@ -74,12 +74,12 @@ public class RconConnection implements Rcon {
 	}
 
 	@Override
-	public Packet logIn() throws UnsupportedEncodingException, IOException {
-		return sendRequest(new Packet(requestId, Type.LOG_IN, rconConfig.getPassword()));
+	public VanillaVotifierPacket logIn() throws UnsupportedEncodingException, IOException {
+		return sendRequest(new VanillaVotifierPacket(requestId, Type.LOG_IN, rconConfig.getPassword()));
 	}
 
 	@Override
-	public Packet sendRequest(Packet request) throws UnsupportedEncodingException, IOException {
+	public VanillaVotifierPacket sendRequest(VanillaVotifierPacket request) throws UnsupportedEncodingException, IOException {
 		byte[] requestBytes = new byte[request.getLength() + Integer.SIZE / 8];
 		ByteBuffer requestBuffer = ByteBuffer.wrap(requestBytes);
 		requestBuffer.order(ByteOrder.LITTLE_ENDIAN);
@@ -106,6 +106,6 @@ public class RconConnection implements Rcon {
 		responseBuffer.get(responsePayload);
 		responseBuffer.get();
 		responseBuffer.get();
-		return new Packet(responseLength, responseRequestId, responseType, new String(responsePayload, "UTF-8"));
+		return new VanillaVotifierPacket(responseLength, responseRequestId, responseType, new String(responsePayload, "UTF-8"));
 	}
 }

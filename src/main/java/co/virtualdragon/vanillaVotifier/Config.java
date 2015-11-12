@@ -68,17 +68,17 @@ public interface Config {
 		List<String> getCommands();
 	}
 
-	public static class AbstractRconConfig implements RconConfig {
+	public static class VanillaVotifierRconConfig implements RconConfig {
 
 		private InetSocketAddress inetSocketAddress;
 		private String password;
 		private ArrayList<String> commands;
 
-		public AbstractRconConfig(InetSocketAddress inetSocketAddress, String password) {
+		public VanillaVotifierRconConfig(InetSocketAddress inetSocketAddress, String password) {
 			this(inetSocketAddress, password, new ArrayList<String>());
 		}
 
-		public AbstractRconConfig(InetSocketAddress inetSocketAddress, String password, ArrayList<String> commands) {
+		public VanillaVotifierRconConfig(InetSocketAddress inetSocketAddress, String password, ArrayList<String> commands) {
 			this.inetSocketAddress = inetSocketAddress;
 			this.password = password;
 			if (commands == null) {
