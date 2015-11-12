@@ -16,7 +16,11 @@
  */
 package co.virtualdragon.vanillaVotifier;
 
+import java.util.Map.Entry;
+
 public interface LanguagePack {
 
 	String getString(String key);
+	
+	String getString(String key, Entry<String, Object>... substitutions);
 }

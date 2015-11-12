@@ -19,7 +19,7 @@ package co.virtualdragon.vanillaVotifier.impl;
 import co.virtualdragon.vanillaVotifier.Listener;
 import co.virtualdragon.vanillaVotifier.Votifier;
 import co.virtualdragon.vanillaVotifier.event.Event;
-import co.virtualdragon.vanillaVotifier.event.server.CommandResponseEvent;
+import co.virtualdragon.vanillaVotifier.event.server.RconCommandResponseEvent;
 import co.virtualdragon.vanillaVotifier.event.server.ComunicationExceptionEvent;
 import co.virtualdragon.vanillaVotifier.event.server.ConnectionCloseExceptionEvent;
 import co.virtualdragon.vanillaVotifier.event.server.ConnectionClosedEvent;
@@ -30,100 +30,94 @@ import co.virtualdragon.vanillaVotifier.event.server.DecryptInputExceptionEvent;
 import co.virtualdragon.vanillaVotifier.event.server.InvalidRequestEvent;
 import co.virtualdragon.vanillaVotifier.event.server.RconExceptionEvent;
 import co.virtualdragon.vanillaVotifier.event.server.SendingRconCommandEvent;
+import co.virtualdragon.vanillaVotifier.event.server.ServerAwaitingTaskCompletionEvent;
 import co.virtualdragon.vanillaVotifier.event.server.ServerStartedEvent;
 import co.virtualdragon.vanillaVotifier.event.server.ServerStartingEvent;
 import co.virtualdragon.vanillaVotifier.event.server.ServerStoppedEvent;
 import co.virtualdragon.vanillaVotifier.event.server.ServerStoppingEvent;
 import co.virtualdragon.vanillaVotifier.event.server.VoteEvent;
 import java.net.ConnectException;
-import java.util.HashMap;
-import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.commons.lang3.text.StrSubstitutor;
+import java.util.AbstractMap.SimpleEntry;
 
 public class VanillaVotifierServerListener implements Listener {
 
 	@Override
 	public void onEvent(Event event, Votifier votifier) {
 		if (event instanceof ServerStartingEvent) {
-			votifier.getOutputWriter().println(votifier.getLanguagePack().getString("s1"));
+			votifier.getOutputWriter().printlnTranslation("s1");
 		} else if (event instanceof ServerStartedEvent) {
-			votifier.getOutputWriter().println(votifier.getLanguagePack().getString("s2"));
+			votifier.getOutputWriter().printlnTranslation("s2");
 		} else if (event instanceof ConnectionEstablishedEvent) {
 			ConnectionEstablishedEvent connectionEstablishedEvent = (ConnectionEstablishedEvent) event;
-			HashMap<String, String> substitutions = new HashMap<String, String>();
-			substitutions.put("ip", connectionEstablishedEvent.getSocket().getInetAddress().toString());
-			substitutions.put("port", connectionEstablishedEvent.getSocket().getPort() + "");
-			votifier.getOutputWriter().println(new StrSubstitutor(substitutions).replace(votifier.getLanguagePack().getString("s3")));
+			votifier.getOutputWriter().printlnTranslation("s3",
+					new SimpleEntry<String, Object>("ip", connectionEstablishedEvent.getSocket().getInetAddress().getHostAddress()),
+					new SimpleEntry<String, Object>("port", connectionEstablishedEvent.getSocket().getPort()));
 		} else if (event instanceof VoteEvent) {
 			VoteEvent voteEvent = (VoteEvent) event;
-			HashMap<String, String> substitutions = new HashMap<String, String>();
-			substitutions.put("ip", voteEvent.getSocket().getInetAddress().toString());
-			substitutions.put("port", voteEvent.getSocket().getPort() + "");
-			substitutions.put("service-name", voteEvent.getVote().getServiceName());
-			substitutions.put("user-name", voteEvent.getVote().getUserName());
-			substitutions.put("address", voteEvent.getVote().getAddress());
-			substitutions.put("time-stamp", voteEvent.getVote().getTimeStamp());
-			votifier.getOutputWriter().println(new StrSubstitutor(substitutions).replace(votifier.getLanguagePack().getString("s4")));
+			votifier.getOutputWriter().printlnTranslation("s4",
+					new SimpleEntry<String, Object>("ip", voteEvent.getSocket().getInetAddress().getHostAddress()),
+					new SimpleEntry<String, Object>("port", voteEvent.getSocket().getPort()),
+					new SimpleEntry<String, Object>("service-name", voteEvent.getVote().getServiceName()),
+					new SimpleEntry<String, Object>("user-name", voteEvent.getVote().getUserName()),
+					new SimpleEntry<String, Object>("address", voteEvent.getVote().getAddress()),
+					new SimpleEntry<String, Object>("time-stamp", voteEvent.getVote().getTimeStamp()));
 		} else if (event instanceof SendingRconCommandEvent) {
-			HashMap<String, String> substitutions = new HashMap<String, String>();
-			substitutions.put("command", ((SendingRconCommandEvent) event).getCommand());
-			votifier.getOutputWriter().println(new StrSubstitutor(substitutions).replace(votifier.getLanguagePack().getString("s5")));
-		} else if (event instanceof CommandResponseEvent) {
-			HashMap<String, String> substitutions = new HashMap<String, String>();
-			substitutions.put("response", ((CommandResponseEvent) event).getMessage());
-			votifier.getOutputWriter().println(new StrSubstitutor(substitutions).replace(votifier.getLanguagePack().getString("s6")));
+			SendingRconCommandEvent sendingRconCommandEvent = (SendingRconCommandEvent) event;
+			votifier.getOutputWriter().printlnTranslation("s5",
+					new SimpleEntry<String, Object>("ip", sendingRconCommandEvent.getRcon().getRconConfig().getInetSocketAddress().getHostString()),
+					new SimpleEntry<String, Object>("port", sendingRconCommandEvent.getRcon().getRconConfig().getInetSocketAddress().getPort()),
+					new SimpleEntry<String, Object>("command", sendingRconCommandEvent.getCommand()));
+		} else if (event instanceof RconCommandResponseEvent) {
+			RconCommandResponseEvent commandResponseEvent = ((RconCommandResponseEvent) event);
+			if (commandResponseEvent.getMessage() != null && !commandResponseEvent.getMessage().isEmpty()) {
+				votifier.getOutputWriter().printlnTranslation("s6", new SimpleEntry<String, Object>("response", commandResponseEvent.getMessage()));
+			} else {
+				votifier.getOutputWriter().printlnTranslation("s53");
+			}
 		} else if (event instanceof RconExceptionEvent) {
-			HashMap<String, String> substitutions = new HashMap<String, String>();
 			Exception exception = ((RconExceptionEvent) event).getException();
 			if (exception.getMessage() != null && exception.getMessage().equals("Invalid password.")) {
-				votifier.getOutputWriter().println(votifier.getLanguagePack().getString("s7"));
+				votifier.getOutputWriter().printlnTranslation("s7");
 			} else if (exception instanceof ConnectException) {
-				votifier.getOutputWriter().println(votifier.getLanguagePack().getString("s39"));
+				votifier.getOutputWriter().printlnTranslation("s39");
 			} else {
-				substitutions.put("exception", ExceptionUtils.getStackTrace(exception));
-				votifier.getOutputWriter().println(new StrSubstitutor(substitutions).replace(votifier.getLanguagePack().getString("s28")));
+				votifier.getOutputWriter().printlnTranslation("s28", new SimpleEntry<String, Object>("exception", exception));
 			}
 		} else if (event instanceof InvalidRequestEvent) {
 			InvalidRequestEvent invalidRequestEvent = (InvalidRequestEvent) event;
-			HashMap<String, String> substitutions = new HashMap<String, String>();
-			substitutions.put("ip", invalidRequestEvent.getSocket().getInetAddress().toString());
-			substitutions.put("port", invalidRequestEvent.getSocket().getPort() + "");
-			substitutions.put("message", invalidRequestEvent.getMessage().replaceAll("\n", "\t"));
-			votifier.getOutputWriter().println(new StrSubstitutor(substitutions).replace(votifier.getLanguagePack().getString("s8")));
+			votifier.getOutputWriter().printlnTranslation("s8",
+					new SimpleEntry<String, Object>("ip", invalidRequestEvent.getSocket().getInetAddress().getHostAddress()),
+					new SimpleEntry<String, Object>("port", invalidRequestEvent.getSocket().getPort()),
+					new SimpleEntry("message", invalidRequestEvent.getMessage().replaceAll("\n", "\t")));
 		} else if (event instanceof ConnectionInputStreamCloseExceptionEvent) {
 			ConnectionInputStreamCloseExceptionEvent socketInputStreamCloseException = (ConnectionInputStreamCloseExceptionEvent) event;
-			HashMap<String, String> substitutions = new HashMap<String, String>();
-			substitutions.put("ip", socketInputStreamCloseException.getSocket().getInetAddress().toString());
-			substitutions.put("port", socketInputStreamCloseException.getSocket().getPort() + "");
-			substitutions.put("exception", ExceptionUtils.getStackTrace(socketInputStreamCloseException.getException()));
-			votifier.getOutputWriter().println(new StrSubstitutor(substitutions).replace(votifier.getLanguagePack().getString("s9")));
+			votifier.getOutputWriter().printlnTranslation("s9",
+					new SimpleEntry<String, Object>("ip", socketInputStreamCloseException.getSocket().getInetAddress().getHostAddress()),
+					new SimpleEntry<String, Object>("port", socketInputStreamCloseException.getSocket().getPort()),
+					new SimpleEntry<String, Object>("exception", socketInputStreamCloseException.getException()));
 		} else if (event instanceof ConnectionClosedEvent) {
 			ConnectionClosedEvent connectionClosedEvent = (ConnectionClosedEvent) event;
-			HashMap<String, String> substitutions = new HashMap<String, String>();
-			substitutions.put("ip", connectionClosedEvent.getSocket().getInetAddress().toString());
-			substitutions.put("port", connectionClosedEvent.getSocket().getPort() + "");
-			votifier.getOutputWriter().println(new StrSubstitutor(substitutions).replace(votifier.getLanguagePack().getString("s10")));
+			votifier.getOutputWriter().printlnTranslation("s10",
+					new SimpleEntry<String, Object>("ip", connectionClosedEvent.getSocket().getInetAddress().getHostAddress()),
+					new SimpleEntry<String, Object>("port", connectionClosedEvent.getSocket().getPort()));
 		} else if (event instanceof ConnectionCloseExceptionEvent) {
 			ConnectionCloseExceptionEvent connectionCloseException = (ConnectionCloseExceptionEvent) event;
-			HashMap<String, String> substitutions = new HashMap<String, String>();
-			substitutions.put("ip", connectionCloseException.getSocket().getInetAddress().toString());
-			substitutions.put("port", connectionCloseException.getSocket().getPort() + "");
-			substitutions.put("exception", ExceptionUtils.getStackTrace(connectionCloseException.getException()));
-			votifier.getOutputWriter().println(new StrSubstitutor(substitutions).replace(votifier.getLanguagePack().getString("s11")));
+			votifier.getOutputWriter().printlnTranslation("s11",
+					new SimpleEntry<String, Object>("ip", connectionCloseException.getSocket().getInetAddress().getHostAddress()),
+					new SimpleEntry<String, Object>("port", connectionCloseException.getSocket().getPort()),
+					new SimpleEntry<String, Object>("exception", connectionCloseException.getException()));
 		} else if (event instanceof DecryptInputExceptionEvent) {
-			votifier.getOutputWriter().println(votifier.getLanguagePack().getString("s46"));
+			votifier.getOutputWriter().printlnTranslation("s46");
 		} else if (event instanceof ComunicationExceptionEvent) {
-			HashMap<String, String> substitutions = new HashMap<String, String>();
-			substitutions.put("exception", ExceptionUtils.getStackTrace(((ComunicationExceptionEvent) event).getException()));
-			votifier.getOutputWriter().println(new StrSubstitutor(substitutions).replace(votifier.getLanguagePack().getString("s29")));
+			votifier.getOutputWriter().printlnTranslation("s29", new SimpleEntry<String, Object>("exception", ((ComunicationExceptionEvent) event).getException()));
 		} else if (event instanceof ConnectionEstablishExceptionEvent) {
-			HashMap<String, String> substitutions = new HashMap<String, String>();
-			substitutions.put("exception", ExceptionUtils.getStackTrace(((ConnectionEstablishExceptionEvent) event).getException()));
-			votifier.getOutputWriter().println(new StrSubstitutor(substitutions).replace(votifier.getLanguagePack().getString("s30")));
+			votifier.getOutputWriter().printlnTranslation("s30", new SimpleEntry<String, Object>("exception", ((ConnectionEstablishExceptionEvent) event).getException()));
 		} else if (event instanceof ServerStoppingEvent) {
-			votifier.getOutputWriter().println(votifier.getLanguagePack().getString("s22"));
+			votifier.getOutputWriter().printlnTranslation("s22");
+		} else if (event instanceof ServerAwaitingTaskCompletionEvent) {
+			votifier.getOutputWriter().printlnTranslation("s54");
 		} else if (event instanceof ServerStoppedEvent) {
-			votifier.getOutputWriter().println(votifier.getLanguagePack().getString("s14"));
+			votifier.getOutputWriter().printlnTranslation("s14");
 		}
 	}
 }

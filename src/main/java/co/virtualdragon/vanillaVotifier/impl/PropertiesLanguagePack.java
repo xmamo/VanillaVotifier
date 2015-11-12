@@ -19,7 +19,11 @@ package co.virtualdragon.vanillaVotifier.impl;
 import co.virtualdragon.vanillaVotifier.LanguagePack;
 import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map.Entry;
 import java.util.ResourceBundle;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.lang3.text.StrSubstitutor;
 
 public class PropertiesLanguagePack implements LanguagePack {
 
@@ -31,8 +35,14 @@ public class PropertiesLanguagePack implements LanguagePack {
 
 	@Override
 	public String getString(String key) {
+		return getString(key, new Entry[]{});
+	}
+
+	@Override
+	public String getString(String key, Entry<String, Object>... substitutions) {
+		String string = null;
 		if (bundle.containsKey(key)) {
-			return bundle.getString(key);
+			string = bundle.getString(key).replaceAll("\n", System.lineSeparator());
 		} else if (bundle.containsKey(key + "-location")) {
 			String resource = getString(key + "-location");
 			if (resource == null) {
@@ -58,8 +68,20 @@ public class PropertiesLanguagePack implements LanguagePack {
 			} catch (IOException e) {
 				// Can't happen.
 			}
-			return stringBuilder.toString();
+			string = stringBuilder.toString();
 		}
-		return null;
+		if (substitutions == null || string == null) {
+			return string;
+		} else {
+			HashMap<String, Object> substitutionsMap = new HashMap<String, Object>();
+			for (Entry<String, Object> substitution : substitutions) {
+				if (!(substitution.getValue() instanceof Throwable)) {
+					substitutionsMap.put(substitution.getKey(), substitution.getValue());
+				} else {
+					substitutionsMap.put(substitution.getKey(), ExceptionUtils.getStackTrace((Throwable) substitution.getValue()));
+				}
+			}
+			return new StrSubstitutor(substitutionsMap).replace(string);
+		}
 	}
 }

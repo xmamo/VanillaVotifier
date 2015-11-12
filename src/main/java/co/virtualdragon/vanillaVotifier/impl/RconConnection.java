@@ -16,10 +16,10 @@
  */
 package co.virtualdragon.vanillaVotifier.impl;
 
+import co.virtualdragon.vanillaVotifier.Config.RconConfig;
 import co.virtualdragon.vanillaVotifier.Rcon;
 import co.virtualdragon.vanillaVotifier.Rcon.Packet;
 import co.virtualdragon.vanillaVotifier.Rcon.Packet.Type;
-import co.virtualdragon.vanillaVotifier.Votifier;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
@@ -29,13 +29,13 @@ import java.util.Random;
 
 public class RconConnection implements Rcon {
 
-	private final Votifier votifier;
+	private RconConfig rconConfig;
 
 	private Socket socket;
 	private int requestId;
 
-	public RconConnection(Votifier votifier) {
-		this.votifier = votifier;
+	public RconConnection(RconConfig rconConfig) {
+		setRconConfig(rconConfig);
 		Random random = new Random(System.currentTimeMillis());
 		while (true) {
 			requestId = random.nextInt();
@@ -46,8 +46,21 @@ public class RconConnection implements Rcon {
 	}
 
 	@Override
+	public RconConfig getRconConfig() {
+		return rconConfig;
+	}
+
+	@Override
+	public void setRconConfig(RconConfig rconConfig) {
+		if (rconConfig == null) {
+			throw new NullPointerException("rconConfig can't be null!");
+		}
+		this.rconConfig = rconConfig;
+	}
+
+	@Override
 	public void connect() throws IOException {
-		socket = new Socket(votifier.getConfig().getRconInetSocketAddress().getAddress(), votifier.getConfig().getRconInetSocketAddress().getPort());
+		socket = new Socket(rconConfig.getInetSocketAddress().getAddress(), rconConfig.getInetSocketAddress().getPort());
 	}
 
 	@Override
@@ -61,8 +74,8 @@ public class RconConnection implements Rcon {
 	}
 
 	@Override
-	public Packet logIn(String password) throws UnsupportedEncodingException, IOException {
-		return sendRequest(new Packet(requestId, Type.LOG_IN, password));
+	public Packet logIn() throws UnsupportedEncodingException, IOException {
+		return sendRequest(new Packet(requestId, Type.LOG_IN, rconConfig.getPassword()));
 	}
 
 	@Override

@@ -17,10 +17,11 @@
 package co.virtualdragon.vanillaVotifier.impl;
 
 import co.virtualdragon.vanillaVotifier.Listener;
+import co.virtualdragon.vanillaVotifier.Rcon;
 import co.virtualdragon.vanillaVotifier.Server;
 import co.virtualdragon.vanillaVotifier.Votifier;
 import co.virtualdragon.vanillaVotifier.event.Event;
-import co.virtualdragon.vanillaVotifier.event.server.CommandResponseEvent;
+import co.virtualdragon.vanillaVotifier.event.server.RconCommandResponseEvent;
 import co.virtualdragon.vanillaVotifier.event.server.ComunicationExceptionEvent;
 import co.virtualdragon.vanillaVotifier.event.server.ConnectionCloseExceptionEvent;
 import co.virtualdragon.vanillaVotifier.event.server.ConnectionClosedEvent;
@@ -33,6 +34,7 @@ import co.virtualdragon.vanillaVotifier.event.server.EncryptedInputReceivedEvent
 import co.virtualdragon.vanillaVotifier.event.server.InvalidRequestEvent;
 import co.virtualdragon.vanillaVotifier.event.server.RconExceptionEvent;
 import co.virtualdragon.vanillaVotifier.event.server.SendingRconCommandEvent;
+import co.virtualdragon.vanillaVotifier.event.server.ServerAwaitingTaskCompletionEvent;
 import co.virtualdragon.vanillaVotifier.event.server.ServerStartedEvent;
 import co.virtualdragon.vanillaVotifier.event.server.ServerStartingEvent;
 import co.virtualdragon.vanillaVotifier.event.server.ServerStoppedEvent;
@@ -46,11 +48,14 @@ import java.net.Socket;
 import java.net.SocketOptions;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
+import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
 import org.apache.commons.lang3.text.StrSubstitutor;
 
 public class VanillaVotifierServer implements Server {
@@ -78,26 +83,26 @@ public class VanillaVotifierServer implements Server {
 		notifyListeners(new ServerStartingEvent());
 		serverSocket = new ServerSocket();
 		serverSocket.bind(votifier.getConfig().getInetSocketAddress());
-		final Cipher cipher = RsaUtils.getDecryptCipher(votifier.getConfig().getKeyPair().getPrivate());
 		running = true;
 		notifyListeners(new ServerStartedEvent());
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
+				ExecutorService executorService = Executors.newSingleThreadExecutor();
 				while (isRunning()) {
 					try {
 						final Socket socket = serverSocket.accept();
-						new Thread(new Runnable() {
+						executorService.execute(new Runnable() {
 							@Override
 							public void run() {
 								try {
 									notifyListeners(new ConnectionEstablishedEvent(socket));
 									socket.setSoTimeout(SocketOptions.SO_TIMEOUT); // SocketException: handled by try/catch.
 									BufferedInputStream in = new BufferedInputStream(socket.getInputStream()); // IOException: handled by try/catch.
-									byte[] request = new byte[256];
+									byte[] request = new byte[((RSAPublicKey) votifier.getConfig().getKeyPair().getPublic()).getModulus().bitLength() / Byte.SIZE];
 									in.read(request); // IOException: handled by try/catch.
 									notifyListeners(new EncryptedInputReceivedEvent(socket, new String(request, StandardCharsets.UTF_8))); // UnsupportedEncodingException: can't happen.
-									request = cipher.doFinal(request); // IllegalBlockSizeException: can't happen.
+									request = RsaUtils.getDecryptCipher(votifier.getConfig().getKeyPair().getPrivate()).doFinal(request); // IllegalBlockSizeException: can't happen.
 									String requestString = new String(request, StandardCharsets.UTF_8); // UnsupportedEncodingException: can't happen.
 									notifyListeners(new DecryptedInputReceivedEvent(socket, requestString));
 									String[] requestArray = requestString.split("\n");
@@ -109,13 +114,15 @@ public class VanillaVotifierServer implements Server {
 										substitutions.put("address", requestArray[3]);
 										substitutions.put("time-stamp", requestArray[4]);
 										StrSubstitutor substitutor = new StrSubstitutor(substitutions);
-										for (String command : votifier.getConfig().getCommands()) {
-											command = substitutor.replace(command);
-											notifyListeners(new SendingRconCommandEvent(command));
-											try {
-												notifyListeners(new CommandResponseEvent(votifier.getCommandSender().sendCommand(command)));
-											} catch (Exception e) {
-												notifyListeners(new RconExceptionEvent(e));
+										for (Rcon rcon : votifier.getRcons()) {
+											for (String command : rcon.getRconConfig().getCommands()) {
+												command = substitutor.replace(command);
+												notifyListeners(new SendingRconCommandEvent(rcon, command));
+												try {
+													notifyListeners(new RconCommandResponseEvent(rcon, votifier.getCommandSender().sendCommand(rcon, command)));
+												} catch (Exception e) {
+													notifyListeners(new RconExceptionEvent(rcon, e));
+												}
 											}
 										}
 									} else {
@@ -127,9 +134,9 @@ public class VanillaVotifierServer implements Server {
 										notifyListeners(new ConnectionInputStreamCloseExceptionEvent(socket, e));
 									}
 								} catch (BadPaddingException e) {
-									notifyListeners(new DecryptInputExceptionEvent(e));
+									notifyListeners(new DecryptInputExceptionEvent(socket, e));
 								} catch (Exception e) {
-									notifyListeners(new ComunicationExceptionEvent(e));
+									notifyListeners(new ComunicationExceptionEvent(socket, e));
 								}
 								try {
 									socket.close();
@@ -138,11 +145,20 @@ public class VanillaVotifierServer implements Server {
 									notifyListeners(new ConnectionCloseExceptionEvent(socket, e));
 								}
 							}
-						}).start();
+						});
 					} catch (Exception e) {
 						if (running) { // Show errors only while running, to hide error while stopping.
 							notifyListeners(new ConnectionEstablishExceptionEvent(e));
 						}
+					}
+				}
+				executorService.shutdown();
+				if (!executorService.isTerminated()) {
+					notifyListeners(new ServerAwaitingTaskCompletionEvent());
+					try {
+						executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
+					} catch (Exception e) {
+						// InterruptedException: can't happen.
 					}
 				}
 				notifyListeners(new ServerStoppedEvent());

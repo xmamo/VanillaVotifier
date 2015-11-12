@@ -17,16 +17,53 @@
 package co.virtualdragon.vanillaVotifier.impl;
 
 import co.virtualdragon.vanillaVotifier.OutputWriter;
+import co.virtualdragon.vanillaVotifier.Votifier;
+import java.util.Map.Entry;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 public class ConsoleOutputWriter implements OutputWriter {
 
+	private Votifier votifier;
+
+	public ConsoleOutputWriter(Votifier votifier) {
+		this.votifier = votifier;
+	}
+
 	@Override
 	public void print(Object object) {
-		System.out.print(object);
+		if (!(object instanceof Throwable)) {
+			System.out.print(object);
+		} else {
+			System.out.print(ExceptionUtils.getStackTrace((Throwable) object));
+		}
 	}
 
 	@Override
 	public void println(Object object) {
-		System.out.println(object);
+		if (!(object instanceof Throwable)) {
+			System.out.println(object);
+		} else {
+			System.out.println(ExceptionUtils.getStackTrace((Throwable) object));
+		}
+	}
+
+	@Override
+	public void printTranslation(String key) {
+		printTranslation(key, new Entry[]{});
+	}
+
+	@Override
+	public void printTranslation(String key, Entry<String, Object>... substitutions) {
+		print(votifier.getLanguagePack().getString(key, substitutions));
+	}
+
+	@Override
+	public void printlnTranslation(String key) {
+		printlnTranslation(key, new Entry[]{});
+	}
+
+	@Override
+	public void printlnTranslation(String key, Entry<String, Object>... substitutions) {
+		println(votifier.getLanguagePack().getString(key, substitutions));
 	}
 }

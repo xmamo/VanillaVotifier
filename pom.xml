@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>co.virtualdragon</groupId>
 	<artifactId>VanillaVotifier</artifactId>
-	<version>2.4.3</version>
+	<version>3.0</version>
 	<name>VanillaVotifier</name>
 	<packaging>jar</packaging>
 	<dependencies>

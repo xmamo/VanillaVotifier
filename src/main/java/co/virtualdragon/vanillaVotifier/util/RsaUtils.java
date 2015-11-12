@@ -31,6 +31,10 @@ import javax.crypto.Cipher;
 
 public class RsaUtils {
 
+	public static KeyPair genKeyPair() {
+		return genKeyPair(2048);
+	}
+
 	public static KeyPair genKeyPair(int keySize) {
 		try {
 			KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");

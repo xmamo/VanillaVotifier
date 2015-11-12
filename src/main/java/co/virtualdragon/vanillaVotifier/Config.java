@@ -20,12 +20,12 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.security.KeyPair;
-import java.security.spec.InvalidKeySpecException;
+import java.util.ArrayList;
 import java.util.List;
 
 public interface Config {
 
-	void load() throws IOException, InvalidKeySpecException;
+	void load() throws Exception;
 
 	boolean isLoaded();
 
@@ -51,17 +51,68 @@ public interface Config {
 
 	void genKeyPair(int keySize);
 
-	List<String> getCommands();
-
-	void setCommands(List<String> commands);
-
-	InetSocketAddress getRconInetSocketAddress();
-
-	void setRconInetSocketAddress(InetSocketAddress inetSocketAddress);
-
-	String getRconPassword();
-
-	void setRconPassword(String password);
-
 	void save() throws IOException;
+
+	List<RconConfig> getRconConfigs();
+
+	public static interface RconConfig {
+
+		InetSocketAddress getInetSocketAddress();
+
+		void setInetSocketAddress(InetSocketAddress inetSocketAddress);
+
+		String getPassword();
+
+		void setPassword(String password);
+
+		List<String> getCommands();
+	}
+
+	public static class AbstractRconConfig implements RconConfig {
+
+		private InetSocketAddress inetSocketAddress;
+		private String password;
+		private ArrayList<String> commands;
+
+		public AbstractRconConfig(InetSocketAddress inetSocketAddress, String password) {
+			this(inetSocketAddress, password, new ArrayList<String>());
+		}
+
+		public AbstractRconConfig(InetSocketAddress inetSocketAddress, String password, ArrayList<String> commands) {
+			this.inetSocketAddress = inetSocketAddress;
+			this.password = password;
+			if (commands == null) {
+				commands = new ArrayList<String>();
+			}
+			this.commands = commands;
+		}
+
+		@Override
+		public InetSocketAddress getInetSocketAddress() {
+			return inetSocketAddress;
+		}
+
+		@Override
+		public void setInetSocketAddress(InetSocketAddress inetSocketAddress) {
+			if (inetSocketAddress == null) {
+				inetSocketAddress = new InetSocketAddress("127.0.0.1", 8192);
+			}
+			this.inetSocketAddress = inetSocketAddress;
+		}
+
+		@Override
+		public String getPassword() {
+			return password;
+		}
+
+		@Override
+		public void setPassword(String password) {
+			this.password = password;
+		}
+
+		@Override
+		public ArrayList<String> getCommands() {
+			return commands;
+		}
+	}
 }

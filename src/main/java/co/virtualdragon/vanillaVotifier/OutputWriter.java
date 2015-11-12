@@ -16,9 +16,19 @@
  */
 package co.virtualdragon.vanillaVotifier;
 
+import java.util.Map.Entry;
+
 public interface OutputWriter {
 
 	void print(Object object);
 
 	void println(Object object);
+
+	void printTranslation(String key);
+
+	void printTranslation(String key, Entry<String, Object>... replacements);
+
+	void printlnTranslation(String key);
+
+	void printlnTranslation(String key, Entry<String, Object>... replacements);
 }

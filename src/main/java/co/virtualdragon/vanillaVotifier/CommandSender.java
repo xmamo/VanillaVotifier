@@ -18,5 +18,5 @@ package co.virtualdragon.vanillaVotifier;
 
 public interface CommandSender {
 
-	String sendCommand(String command) throws Exception;
+	String sendCommand(Rcon rcon, String command) throws Exception;
 }

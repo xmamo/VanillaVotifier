@@ -35,4 +35,21 @@ public class JsonUtils {
 		}
 		return prettyString.substring(0, prettyString.length() - System.lineSeparator().length());
 	}
+
+	public static boolean merge(JSONObject from, JSONObject to) {
+		boolean updated = false;
+		for (Object keyObject : from.keySet()) {
+			String key = (String) keyObject;
+			if (!to.has(key)) {
+				to.put(key, from.get(key));
+				updated = true;
+			}
+			if (from.get(key) instanceof JSONObject) {
+				if (merge(from.getJSONObject(key), to.getJSONObject(key))) {
+					updated = true;
+				}
+			}
+		}
+		return updated;
+	}
 }
