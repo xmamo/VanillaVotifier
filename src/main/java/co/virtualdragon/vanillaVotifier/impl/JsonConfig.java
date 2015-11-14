@@ -29,7 +29,6 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -66,16 +65,14 @@ public class JsonConfig implements Config {
 	public synchronized void load() throws IOException, InvalidKeySpecException {
 		if (!configFile.exists()) {
 			BufferedInputStream in = new BufferedInputStream(JsonConfig.class.getResourceAsStream("config.json"));
-			BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(configFile));
+			StringBuilder stringBuilder = new StringBuilder();
 			int i;
 			while ((i = in.read()) != -1) {
-				if (i != '\n') {
-					out.write(i);
-				} else {
-					for (int j = 0; j < System.lineSeparator().length(); j++) {
-						out.write(System.lineSeparator().charAt(j));
-					}
-				}
+				stringBuilder.append((char) i);
+			}
+			BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(configFile));
+			for (char c : stringBuilder.toString().replaceAll("\\R", System.lineSeparator()).toCharArray()) {
+				out.write((int) c);
 			}
 			out.flush();
 			out.close();
