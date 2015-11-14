@@ -28,6 +28,10 @@ import co.virtualdragon.vanillaVotifier.Tester;
 import co.virtualdragon.vanillaVotifier.Votifier;
 import co.virtualdragon.vanillaVotifier.event.Event;
 import co.virtualdragon.vanillaVotifier.event.server.ServerStoppedEvent;
+import co.virtualdragon.vanillaVotifier.exception.InvalidPrivateKeyFileException;
+import co.virtualdragon.vanillaVotifier.exception.InvalidPublicKeyFileException;
+import co.virtualdragon.vanillaVotifier.exception.PrivateKeyFileNotFoundException;
+import co.virtualdragon.vanillaVotifier.exception.PublicKeyFileNotFoundException;
 import java.io.File;
 import java.net.BindException;
 import java.util.AbstractMap.SimpleEntry;
@@ -51,7 +55,7 @@ public class VanillaVotifier implements Votifier {
 		languagePack = new PropertiesLanguagePack("co/virtualdragon/vanillaVotifier/impl/lang/lang");
 		outputWriter = new ConsoleOutputWriter(this);
 		config = new JsonConfig(new File("config.json"));
-		commandSender = new RconCommandSender(this);
+		commandSender = new RconCommandSender();
 		server = new VanillaVotifierServer(this);
 		rcons = new ArrayList<Rcon>();
 		tester = new VanillaVotifierTester(this);
@@ -86,10 +90,6 @@ public class VanillaVotifier implements Votifier {
 				}
 			} else if (command.equalsIgnoreCase("restart") || command.toLowerCase().startsWith("restart ")) {
 				if (command.split(" ").length == 1) {
-					if (!stopServer(votifier)) {
-						System.exit(0); // "return" somehow isn't enough.
-						return;
-					}
 					Listener listener = new Listener() {
 						@Override
 						public void onEvent(Event event, Votifier votifier) {
@@ -103,6 +103,10 @@ public class VanillaVotifier implements Votifier {
 						}
 					};
 					votifier.getServer().getListeners().add(listener);
+					if (!stopServer(votifier)) {
+						System.exit(0); // "return" somehow isn't enough.
+						return;
+					}
 				} else {
 					votifier.getOutputWriter().printlnTranslation("s32");
 				}
@@ -202,18 +206,16 @@ public class VanillaVotifier implements Votifier {
 			return true;
 		} catch (JSONException e) {
 			votifier.getOutputWriter().printlnTranslation("s45", new SimpleEntry<String, Object>("exception", e.getMessage().replaceAll("'", "\"")));
+		} catch (PublicKeyFileNotFoundException e) {
+			votifier.getOutputWriter().printlnTranslation("s49");
+		} catch (PrivateKeyFileNotFoundException e) {
+			votifier.getOutputWriter().printlnTranslation("s50");
+		} catch (InvalidPublicKeyFileException e) {
+			votifier.getOutputWriter().printlnTranslation("s47");
+		} catch (InvalidPrivateKeyFileException e) {
+			votifier.getOutputWriter().printlnTranslation("s48");
 		} catch (Exception e) {
-			if (e.getMessage().equals("Can't find public key file!")) {
-				votifier.getOutputWriter().printlnTranslation("s49");
-			} else if (e.getMessage().equals("Can't find private key file!")) {
-				votifier.getOutputWriter().printlnTranslation("s50");
-			} else if (e.getMessage().equals("Invalid public key file!")) {
-				votifier.getOutputWriter().printlnTranslation("s47");
-			} else if (e.getMessage().equals("Invalid private key file!")) {
-				votifier.getOutputWriter().printlnTranslation("s48");
-			} else {
-				votifier.getOutputWriter().printlnTranslation("s15", new SimpleEntry<String, Object>("exception", e));
-			}
+			votifier.getOutputWriter().printlnTranslation("s15", new SimpleEntry<String, Object>("exception", e));
 		}
 		return false;
 	}

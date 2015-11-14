@@ -17,6 +17,10 @@
 package co.virtualdragon.vanillaVotifier.impl;
 
 import co.virtualdragon.vanillaVotifier.Config;
+import co.virtualdragon.vanillaVotifier.exception.InvalidPrivateKeyFileException;
+import co.virtualdragon.vanillaVotifier.exception.InvalidPublicKeyFileException;
+import co.virtualdragon.vanillaVotifier.exception.PrivateKeyFileNotFoundException;
+import co.virtualdragon.vanillaVotifier.exception.PublicKeyFileNotFoundException;
 import co.virtualdragon.vanillaVotifier.util.JsonUtils;
 import co.virtualdragon.vanillaVotifier.util.RsaUtils;
 import java.io.BufferedInputStream;
@@ -25,12 +29,14 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.security.KeyPair;
+import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.List;
 import org.bouncycastle.util.io.pem.PemObject;
@@ -57,7 +63,7 @@ public class JsonConfig implements Config {
 	}
 
 	@Override
-	public void load() throws Exception {
+	public synchronized void load() throws IOException, InvalidKeySpecException {
 		if (!configFile.exists()) {
 			BufferedInputStream in = new BufferedInputStream(JsonConfig.class.getResourceAsStream("config.json"));
 			BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(configFile));
@@ -100,20 +106,20 @@ public class JsonConfig implements Config {
 			privatePemWriter.close();
 		}
 		if (!publicKeyFile.exists()) {
-			throw new Exception("Can't find public key file!");
+			throw new PublicKeyFileNotFoundException();
 		}
 		if (!privateKeyFile.exists()) {
-			throw new Exception("Can't find private key file!");
+			throw new PrivateKeyFileNotFoundException();
 		}
 		PemReader publicKeyPemReader = new PemReader(new BufferedReader(new FileReader(publicKeyFile)));
 		PemReader privateKeyPemReader = new PemReader(new BufferedReader(new FileReader(privateKeyFile)));
 		PemObject publicPemObject = publicKeyPemReader.readPemObject();
 		if (publicPemObject == null) {
-			throw new Exception("Invalid public key file!");
+			throw new InvalidPublicKeyFileException();
 		}
 		PemObject privatePemObject = privateKeyPemReader.readPemObject();
 		if (privatePemObject == null) {
-			throw new Exception("Invalid private key file!");
+			throw new InvalidPrivateKeyFileException();
 		}
 		keyPair = new KeyPair(RsaUtils.bytesToPublicKey(publicPemObject.getContent()), RsaUtils.bytesToPrivateKey(privatePemObject.getContent()));
 		publicKeyPemReader.close();
@@ -150,31 +156,25 @@ public class JsonConfig implements Config {
 		jsonObject.put("config-version", 3);
 	}
 
-	private void checkState() {
-		if (!isLoaded()) {
-			throw new IllegalStateException("Config isn't loaded yet!");
-		}
-	}
-
 	@Override
-	public boolean isLoaded() {
+	public synchronized boolean isLoaded() {
 		return loaded;
 	}
 
 	@Override
-	public int getConfigVersion() {
+	public synchronized int getConfigVersion() {
 		checkState();
 		return configVersion;
 	}
 
 	@Override
-	public InetSocketAddress getInetSocketAddress() {
+	public synchronized InetSocketAddress getInetSocketAddress() {
 		checkState();
 		return inetSocketAddress;
 	}
 
 	@Override
-	public void setInetSocketAddress(InetSocketAddress inetSocketAddress) {
+	public synchronized void setInetSocketAddress(InetSocketAddress inetSocketAddress) {
 		checkState();
 		if (inetSocketAddress == null) {
 			inetSocketAddress = new InetSocketAddress("127.0.0.1", 8192);
@@ -183,13 +183,13 @@ public class JsonConfig implements Config {
 	}
 
 	@Override
-	public File getPublicKeyFile() {
+	public synchronized File getPublicKeyFile() {
 		checkState();
 		return publicKeyFile;
 	}
 
 	@Override
-	public void setPublicKeyFile(File location) {
+	public synchronized void setPublicKeyFile(File location) {
 		checkState();
 		if (location == null) {
 			location = new File("public.pem");
@@ -198,13 +198,13 @@ public class JsonConfig implements Config {
 	}
 
 	@Override
-	public File getPrivateKeyFile() {
+	public synchronized File getPrivateKeyFile() {
 		checkState();
 		return privateKeyFile;
 	}
 
 	@Override
-	public void setPrivateKeyFile(File location) {
+	public synchronized void setPrivateKeyFile(File location) {
 		checkState();
 		if (location == null) {
 			location = new File("private.pem");
@@ -213,13 +213,13 @@ public class JsonConfig implements Config {
 	}
 
 	@Override
-	public KeyPair getKeyPair() {
+	public synchronized KeyPair getKeyPair() {
 		checkState();
 		return keyPair;
 	}
 
 	@Override
-	public void setKeyPair(KeyPair keyPair) {
+	public synchronized void setKeyPair(KeyPair keyPair) {
 		checkState();
 		if (keyPair == null) {
 			keyPair = RsaUtils.genKeyPair(2048);
@@ -228,22 +228,22 @@ public class JsonConfig implements Config {
 	}
 
 	@Override
-	public void genKeyPair() {
+	public synchronized void genKeyPair() {
 		genKeyPair(2048);
 	}
 
 	@Override
-	public void genKeyPair(int keySize) {
+	public synchronized void genKeyPair(int keySize) {
 		setKeyPair(RsaUtils.genKeyPair(keySize));
 	}
 
 	@Override
-	public List<RconConfig> getRconConfigs() {
+	public synchronized List<RconConfig> getRconConfigs() {
 		return rconConfigs;
 	}
 
 	@Override
-	public void save() throws IOException {
+	public synchronized void save() throws IOException {
 		checkState();
 		JSONObject config = new JSONObject();
 		config.put("config-version", getConfigVersion());
@@ -284,5 +284,11 @@ public class JsonConfig implements Config {
 		privatePemWriter.writeObject(new PemObject("RSA PRIVATE KEY", getKeyPair().getPrivate().getEncoded()));
 		privatePemWriter.flush();
 		privatePemWriter.close();
+	}
+	
+	private void checkState() {
+		if (!isLoaded()) {
+			throw new IllegalStateException("Config isn't loaded yet!");
+		}
 	}
 }

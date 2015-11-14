@@ -23,7 +23,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 
 public class ConsoleOutputWriter implements OutputWriter {
 
-	private Votifier votifier;
+	private final Votifier votifier;
 
 	public ConsoleOutputWriter(Votifier votifier) {
 		this.votifier = votifier;
@@ -31,19 +31,23 @@ public class ConsoleOutputWriter implements OutputWriter {
 
 	@Override
 	public void print(Object object) {
-		if (!(object instanceof Throwable)) {
-			System.out.print(object);
-		} else {
-			System.out.print(ExceptionUtils.getStackTrace((Throwable) object));
+		synchronized (System.out) {
+			if (!(object instanceof Throwable)) {
+				System.out.print(object);
+			} else {
+				System.out.print(ExceptionUtils.getStackTrace((Throwable) object));
+			}
 		}
 	}
 
 	@Override
 	public void println(Object object) {
-		if (!(object instanceof Throwable)) {
-			System.out.println(object);
-		} else {
-			System.out.println(ExceptionUtils.getStackTrace((Throwable) object));
+		synchronized (System.out) {
+			if (!(object instanceof Throwable)) {
+				System.out.println(object);
+			} else {
+				System.out.println(ExceptionUtils.getStackTrace((Throwable) object));
+			}
 		}
 	}
 

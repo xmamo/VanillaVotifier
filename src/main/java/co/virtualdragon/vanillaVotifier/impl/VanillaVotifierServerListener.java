@@ -36,6 +36,7 @@ import co.virtualdragon.vanillaVotifier.event.server.ServerStartingEvent;
 import co.virtualdragon.vanillaVotifier.event.server.ServerStoppedEvent;
 import co.virtualdragon.vanillaVotifier.event.server.ServerStoppingEvent;
 import co.virtualdragon.vanillaVotifier.event.server.VoteEvent;
+import co.virtualdragon.vanillaVotifier.exception.InvalidRconPasswordException;
 import java.net.ConnectException;
 import java.util.AbstractMap.SimpleEntry;
 
@@ -76,7 +77,7 @@ public class VanillaVotifierServerListener implements Listener {
 			}
 		} else if (event instanceof RconExceptionEvent) {
 			Exception exception = ((RconExceptionEvent) event).getException();
-			if (exception.getMessage() != null && exception.getMessage().equals("Invalid password.")) {
+			if (exception instanceof InvalidRconPasswordException) {
 				votifier.getOutputWriter().printlnTranslation("s7");
 			} else if (exception instanceof ConnectException) {
 				votifier.getOutputWriter().printlnTranslation("s39");

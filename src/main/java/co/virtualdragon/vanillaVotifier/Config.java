@@ -20,12 +20,13 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.security.KeyPair;
-import java.util.ArrayList;
+import java.security.spec.InvalidKeySpecException;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public interface Config {
 
-	void load() throws Exception;
+	void load() throws IOException, InvalidKeySpecException;
 
 	boolean isLoaded();
 
@@ -72,28 +73,24 @@ public interface Config {
 
 		private InetSocketAddress inetSocketAddress;
 		private String password;
-		private ArrayList<String> commands;
-
-		public VanillaVotifierRconConfig(InetSocketAddress inetSocketAddress, String password) {
-			this(inetSocketAddress, password, new ArrayList<String>());
+		private CopyOnWriteArrayList<String> commands;
+		
+		{
+			commands = new CopyOnWriteArrayList<String>();
 		}
 
-		public VanillaVotifierRconConfig(InetSocketAddress inetSocketAddress, String password, ArrayList<String> commands) {
+		public VanillaVotifierRconConfig(InetSocketAddress inetSocketAddress, String password) {
 			this.inetSocketAddress = inetSocketAddress;
 			this.password = password;
-			if (commands == null) {
-				commands = new ArrayList<String>();
-			}
-			this.commands = commands;
 		}
 
 		@Override
-		public InetSocketAddress getInetSocketAddress() {
+		public synchronized InetSocketAddress getInetSocketAddress() {
 			return inetSocketAddress;
 		}
 
 		@Override
-		public void setInetSocketAddress(InetSocketAddress inetSocketAddress) {
+		public synchronized void setInetSocketAddress(InetSocketAddress inetSocketAddress) {
 			if (inetSocketAddress == null) {
 				inetSocketAddress = new InetSocketAddress("127.0.0.1", 8192);
 			}
@@ -101,17 +98,17 @@ public interface Config {
 		}
 
 		@Override
-		public String getPassword() {
+		public synchronized String getPassword() {
 			return password;
 		}
 
 		@Override
-		public void setPassword(String password) {
+		public synchronized void setPassword(String password) {
 			this.password = password;
 		}
 
 		@Override
-		public ArrayList<String> getCommands() {
+		public List<String> getCommands() {
 			return commands;
 		}
 	}

@@ -50,8 +50,10 @@ import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -61,13 +63,13 @@ import org.apache.commons.lang3.text.StrSubstitutor;
 public class VanillaVotifierServer implements Server {
 
 	private final Votifier votifier;
-	private final ArrayList<Listener> listeners;
+	private final CopyOnWriteArrayList<Listener> listeners;
 
 	private boolean running;
 	private ServerSocket serverSocket;
 
 	{
-		listeners = new ArrayList<Listener>();
+		listeners = new CopyOnWriteArrayList<Listener>();
 		getListeners().add(new VanillaVotifierServerListener());
 	}
 
@@ -76,7 +78,7 @@ public class VanillaVotifierServer implements Server {
 	}
 
 	@Override
-	public void start() throws IOException, GeneralSecurityException {
+	public synchronized void start() throws IOException, GeneralSecurityException {
 		if (isRunning()) {
 			throw new IllegalStateException("Server is already running!");
 		}
@@ -167,7 +169,7 @@ public class VanillaVotifierServer implements Server {
 	}
 
 	@Override
-	public void stop() throws IOException {
+	public synchronized void stop() throws IOException {
 		if (!isRunning()) {
 			throw new IllegalStateException("Server isn't running!");
 		}
@@ -177,7 +179,7 @@ public class VanillaVotifierServer implements Server {
 	}
 
 	@Override
-	public boolean isRunning() {
+	public synchronized boolean isRunning() {
 		return running;
 	}
 
@@ -188,7 +190,7 @@ public class VanillaVotifierServer implements Server {
 
 	@Override
 	public void notifyListeners(Event event) {
-		for (Listener listener : (ArrayList<Listener>) listeners.clone()) {
+		for (Listener listener : listeners) {
 			listener.onEvent(event, votifier);
 		}
 	}
