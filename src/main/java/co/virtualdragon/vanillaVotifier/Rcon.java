@@ -24,35 +24,25 @@ public interface Rcon {
 
 	RconConfig getRconConfig();
 
-	void setRconConfig(RconConfig rconConfig);
-
 	int getRequestId();
 
 	void connect() throws IOException;
 
 	boolean isConnected();
 
-	VanillaVotifierPacket logIn() throws UnsupportedEncodingException, IOException;
+	Packet logIn() throws UnsupportedEncodingException, IOException;
 
-	VanillaVotifierPacket sendRequest(VanillaVotifierPacket request) throws UnsupportedEncodingException, IOException;
+	Packet sendRequest(Packet request) throws UnsupportedEncodingException, IOException;
 
 	public static interface Packet {
 
 		int getLength();
 
-		void setLength(int length);
-
 		int getRequestId();
-
-		void setRequestId(int requestId);
 
 		Type getType();
 
-		void setType(Type type);
-
 		String getPayload();
-
-		void setPayload(String payload);
 
 		public static enum Type {
 
@@ -94,6 +84,12 @@ public interface Rcon {
 		}
 
 		public VanillaVotifierPacket(int length, int requestId, Type type, String payload) {
+			if (type == null) {
+				throw new IllegalArgumentException("type can't be null!");
+			}
+			if (payload == null) {
+				payload = "";
+			}
 			this.length = length;
 			this.requestId = requestId;
 			this.type = type;
@@ -106,18 +102,8 @@ public interface Rcon {
 		}
 
 		@Override
-		public void setLength(int length) {
-			this.length = length;
-		}
-
-		@Override
 		public int getRequestId() {
 			return requestId;
-		}
-
-		@Override
-		public void setRequestId(int requestId) {
-			this.requestId = requestId;
 		}
 
 		@Override
@@ -126,18 +112,8 @@ public interface Rcon {
 		}
 
 		@Override
-		public void setType(Type type) {
-			this.type = type;
-		}
-
-		@Override
 		public String getPayload() {
 			return payload;
-		}
-
-		@Override
-		public void setPayload(String payload) {
-			this.payload = payload;
 		}
 
 		@Override

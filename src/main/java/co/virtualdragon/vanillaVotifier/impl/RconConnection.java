@@ -23,20 +23,24 @@ import co.virtualdragon.vanillaVotifier.Rcon.VanillaVotifierPacket;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
+import java.net.SocketOptions;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.Random;
+import java.security.SecureRandom;
 
 public class RconConnection implements Rcon {
 
-	private RconConfig rconConfig;
+	private final RconConfig rconConfig;
 
 	private Socket socket;
 	private int requestId;
 
 	public RconConnection(RconConfig rconConfig) {
-		setRconConfig(rconConfig);
-		Random random = new Random(System.currentTimeMillis());
+		if (rconConfig == null) {
+			throw new IllegalArgumentException("rconConfig can't be null!");
+		}
+		this.rconConfig = rconConfig;
+		SecureRandom random = new SecureRandom();
 		while (true) {
 			requestId = random.nextInt();
 			if (requestId != -1) {
@@ -51,35 +55,38 @@ public class RconConnection implements Rcon {
 	}
 
 	@Override
-	public void setRconConfig(RconConfig rconConfig) {
-		if (rconConfig == null) {
-			throw new NullPointerException("rconConfig can't be null!");
-		}
-		this.rconConfig = rconConfig;
-	}
-
-	@Override
-	public void connect() throws IOException {
-		socket = new Socket(rconConfig.getInetSocketAddress().getAddress(), rconConfig.getInetSocketAddress().getPort());
-	}
-
-	@Override
-	public boolean isConnected() {
-		return socket != null && !socket.isClosed();
-	}
-
-	@Override
 	public int getRequestId() {
 		return requestId;
 	}
 
 	@Override
-	public VanillaVotifierPacket logIn() throws UnsupportedEncodingException, IOException {
+	public synchronized void connect() throws IOException {
+		socket = new Socket(rconConfig.getInetSocketAddress().getAddress(), rconConfig.getInetSocketAddress().getPort());
+		socket.setSoTimeout(SocketOptions.SO_TIMEOUT);
+	}
+
+	@Override
+	public synchronized boolean isConnected() {
+		if (socket != null) {
+			try {
+				System.out.println(sendRequest(new VanillaVotifierPacket(requestId, Type.COMMAND, null)));
+				return true;
+			} catch (Exception e) {
+			}
+		}
+		return false;
+	}
+
+	@Override
+	public Packet logIn() throws UnsupportedEncodingException, IOException {
 		return sendRequest(new VanillaVotifierPacket(requestId, Type.LOG_IN, rconConfig.getPassword()));
 	}
 
 	@Override
-	public VanillaVotifierPacket sendRequest(VanillaVotifierPacket request) throws UnsupportedEncodingException, IOException {
+	public synchronized Packet sendRequest(Packet request) throws UnsupportedEncodingException, IOException {
+		if (socket == null) {
+			throw new IllegalStateException("RCon has yet to be connected!");
+		}
 		byte[] requestBytes = new byte[request.getLength() + Integer.SIZE / 8];
 		ByteBuffer requestBuffer = ByteBuffer.wrap(requestBytes);
 		requestBuffer.order(ByteOrder.LITTLE_ENDIAN);

@@ -19,33 +19,28 @@ package co.virtualdragon.vanillaVotifier.impl;
 import co.virtualdragon.vanillaVotifier.CommandSender;
 import co.virtualdragon.vanillaVotifier.Rcon;
 import co.virtualdragon.vanillaVotifier.Rcon.VanillaVotifierPacket;
-import co.virtualdragon.vanillaVotifier.Votifier;
-import java.net.SocketException;
+import co.virtualdragon.vanillaVotifier.exception.InvalidRconPasswordException;
+import java.io.IOException;
 
 public class RconCommandSender implements CommandSender {
 
-	private final Votifier votifier;
-
-	public RconCommandSender(Votifier votifier) {
-		this.votifier = votifier;
-	}
+	private boolean loggedIn;
 
 	@Override
-	public String sendCommand(Rcon rcon, String command) throws Exception {
-		if (!rcon.isConnected()) {
-			rcon.connect();
-		}
-		VanillaVotifierPacket packet = null;
-		try {
-			packet = rcon.sendRequest(new VanillaVotifierPacket(rcon.getRequestId(), VanillaVotifierPacket.Type.LOG_IN, rcon.getRconConfig().getPassword()));
-		} catch (SocketException e) {
-			rcon.connect();
-			packet = rcon.sendRequest(new VanillaVotifierPacket(rcon.getRequestId(), VanillaVotifierPacket.Type.LOG_IN, rcon.getRconConfig().getPassword()));
-		}
-		if (packet.getRequestId() != -1) {
+	public String sendCommand(Rcon rcon, String command) throws IOException, InvalidRconPasswordException {
+		synchronized (rcon.getRconConfig()) {
+			if (!rcon.isConnected()) {
+				rcon.connect();
+				loggedIn = false;
+			}
+			if (!loggedIn) {
+				if (rcon.sendRequest(new VanillaVotifierPacket(rcon.getRequestId(), VanillaVotifierPacket.Type.LOG_IN, rcon.getRconConfig().getPassword())).getRequestId() != -1) {
+					loggedIn = true;
+				} else {
+					throw new InvalidRconPasswordException();
+				}
+			}
 			return rcon.sendRequest(new VanillaVotifierPacket(rcon.getRequestId(), VanillaVotifierPacket.Type.COMMAND, command)).getPayload();
-		} else {
-			throw new Exception("Invalid password.");
 		}
 	}
 }
