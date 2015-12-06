@@ -16,39 +16,60 @@
  */
 package co.virtualdragon.vanillaVotifier.impl;
 
-import co.virtualdragon.vanillaVotifier.OutputWriter;
 import co.virtualdragon.vanillaVotifier.Votifier;
 import java.util.Map.Entry;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import co.virtualdragon.vanillaVotifier.Logger;
+import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
 
-public class ConsoleOutputWriter implements OutputWriter {
+public class VanillaVotifierLogger implements Logger {
 
 	private final Votifier votifier;
+	private final StringBuffer buffer;
 
-	public ConsoleOutputWriter(Votifier votifier) {
+	private BufferedWriter logWriter;
+
+	{
+		buffer = new StringBuffer();
+	}
+
+	public VanillaVotifierLogger(Votifier votifier) {
 		this.votifier = votifier;
 	}
 
 	@Override
 	public void print(Object object) {
+		String string;
+		if (!(object instanceof Throwable)) {
+			string = object.toString();
+		} else {
+			string = ExceptionUtils.getStackTrace((Throwable) object);
+		}
 		synchronized (System.out) {
-			if (!(object instanceof Throwable)) {
-				System.out.print(object);
-			} else {
-				System.out.print(ExceptionUtils.getStackTrace((Throwable) object));
+			System.out.print(string);
+		}
+		initWriterIfInitialized();
+		if (logWriter != null) {
+			synchronized (logWriter) {
+				buffer.append(string);
+				try {
+					logWriter.write(buffer.toString());
+					logWriter.flush();
+				} catch (Exception e) {
+					// Ignoring.
+				}
+				buffer.setLength(0);
 			}
+		} else {
+			buffer.append(string);
 		}
 	}
 
 	@Override
 	public void println(Object object) {
-		synchronized (System.out) {
-			if (!(object instanceof Throwable)) {
-				System.out.println(object);
-			} else {
-				System.out.println(ExceptionUtils.getStackTrace((Throwable) object));
-			}
-		}
+		print(object + System.lineSeparator());
 	}
 
 	@Override
@@ -69,5 +90,15 @@ public class ConsoleOutputWriter implements OutputWriter {
 	@Override
 	public void printlnTranslation(String key, Entry<String, Object>... substitutions) {
 		println(votifier.getLanguagePack().getString(key, substitutions));
+	}
+
+	private void initWriterIfInitialized() {
+		if (logWriter == null && votifier.getConfig().isLoaded()) {
+			try {
+				logWriter = new BufferedWriter(new FileWriter(votifier.getConfig().getLogFile()));
+			} catch (Exception e) {
+				// Ignoring.
+			}
+		}
 	}
 }

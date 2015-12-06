@@ -1,5 +1,6 @@
 {
 	"config-version": 3,
+	"log-file": "votifier.log",
 	"ip": "127.0.0.1",
 	"port": 8192,
 	"key-pair-files": {
