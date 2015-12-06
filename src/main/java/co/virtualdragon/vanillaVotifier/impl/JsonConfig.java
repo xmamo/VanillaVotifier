@@ -51,6 +51,7 @@ public class JsonConfig implements Config {
 
 	private boolean loaded;
 	private int configVersion;
+	private File logFile;
 	private InetSocketAddress inetSocketAddress;
 	private File publicKeyFile;
 	private File privateKeyFile;
@@ -88,6 +89,7 @@ public class JsonConfig implements Config {
 			configVersion = 3;
 			save = true;
 		}
+		logFile = new File(config.getString("log-file"));
 		inetSocketAddress = new InetSocketAddress(config.getString("ip"), config.getInt("port"));
 		publicKeyFile = new File(config.getJSONObject("key-pair-files").getString("public"));
 		privateKeyFile = new File(config.getJSONObject("key-pair-files").getString("private"));
@@ -162,6 +164,21 @@ public class JsonConfig implements Config {
 	public synchronized int getConfigVersion() {
 		checkState();
 		return configVersion;
+	}
+
+	@Override
+	public File getLogFile() {
+		checkState();
+		return logFile;
+	}
+	
+	@Override
+	public void setLogFile(File location) {
+		checkState();
+		if (location == null) {
+			location = new File("log.log");
+		}
+		logFile = location;
 	}
 
 	@Override
@@ -244,6 +261,7 @@ public class JsonConfig implements Config {
 		checkState();
 		JSONObject config = new JSONObject();
 		config.put("config-version", getConfigVersion());
+		config.put("log-file", getLogFile().getPath());
 		config.put("ip", getInetSocketAddress().getHostString());
 		config.put("port", getInetSocketAddress().getPort());
 		config.put("key-pair-files", new JSONObject() {

@@ -22,7 +22,7 @@ public interface Votifier {
 
 	LanguagePack getLanguagePack();
 
-	OutputWriter getOutputWriter();
+	Logger getLogger();
 
 	Config getConfig();
 

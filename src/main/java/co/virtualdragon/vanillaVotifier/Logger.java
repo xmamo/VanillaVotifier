@@ -18,7 +18,7 @@ package co.virtualdragon.vanillaVotifier;
 
 import java.util.Map.Entry;
 
-public interface OutputWriter {
+public interface Logger {
 
 	void print(Object object);
 

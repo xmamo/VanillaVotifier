@@ -32,6 +32,10 @@ public interface Config {
 
 	int getConfigVersion();
 
+	File getLogFile();
+
+	void setLogFile(File location);
+
 	InetSocketAddress getInetSocketAddress();
 
 	void setInetSocketAddress(InetSocketAddress inetSocketAddress);
@@ -74,7 +78,7 @@ public interface Config {
 		private InetSocketAddress inetSocketAddress;
 		private String password;
 		private CopyOnWriteArrayList<String> commands;
-		
+
 		{
 			commands = new CopyOnWriteArrayList<String>();
 		}

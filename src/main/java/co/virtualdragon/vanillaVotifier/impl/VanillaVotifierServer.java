@@ -49,8 +49,6 @@ import java.net.SocketOptions;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.interfaces.RSAPublicKey;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
