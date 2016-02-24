@@ -46,7 +46,6 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketOptions;
-import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.interfaces.RSAPublicKey;
 import java.util.HashMap;
@@ -101,9 +100,9 @@ public class VanillaVotifierServer implements Server {
 									BufferedInputStream in = new BufferedInputStream(socket.getInputStream()); // IOException: handled by try/catch.
 									byte[] request = new byte[((RSAPublicKey) votifier.getConfig().getKeyPair().getPublic()).getModulus().bitLength() / Byte.SIZE];
 									in.read(request); // IOException: handled by try/catch.
-									notifyListeners(new EncryptedInputReceivedEvent(socket, new String(request, StandardCharsets.UTF_8))); // UnsupportedEncodingException: can't happen.
+									notifyListeners(new EncryptedInputReceivedEvent(socket, new String(request, "UTF-8"))); // UnsupportedEncodingException: can't happen.
 									request = RsaUtils.getDecryptCipher(votifier.getConfig().getKeyPair().getPrivate()).doFinal(request); // IllegalBlockSizeException: can't happen.
-									String requestString = new String(request, StandardCharsets.UTF_8); // UnsupportedEncodingException: can't happen.
+									String requestString = new String(request, "UTF-8"); // UnsupportedEncodingException: can't happen.
 									notifyListeners(new DecryptedInputReceivedEvent(socket, requestString));
 									String[] requestArray = requestString.split("\n");
 									if ((requestArray.length == 5 || requestArray.length == 6) && requestArray[0].equals("VOTE")) {

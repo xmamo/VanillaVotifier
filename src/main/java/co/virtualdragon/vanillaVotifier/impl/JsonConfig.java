@@ -33,6 +33,8 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.security.KeyPair;
 import java.security.spec.InvalidKeySpecException;
@@ -167,13 +169,13 @@ public class JsonConfig implements Config {
 	}
 
 	@Override
-	public File getLogFile() {
+	public synchronized File getLogFile() {
 		checkState();
 		return logFile;
 	}
-	
+
 	@Override
-	public void setLogFile(File location) {
+	public synchronized void setLogFile(File location) {
 		checkState();
 		if (location == null) {
 			location = new File("log.log");
@@ -284,23 +286,38 @@ public class JsonConfig implements Config {
 				}
 			}
 		});
-		String configString = JsonUtils.jsonToPrettyString(config);
+		String configString;
+		try {
+			configString = new String(JsonUtils.jsonToPrettyString(config).getBytes(), "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			configString = JsonUtils.jsonToPrettyString(config);
+		}
 		BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(configFile));
 		for (char c : configString.toCharArray()) {
 			out.write(c);
 		}
 		out.flush();
 		out.close();
-		PemWriter publicPemWriter = new PemWriter(new BufferedWriter(new FileWriter(getPublicKeyFile())));
+		PemWriter publicPemWriter;
+		try {
+			publicPemWriter = new PemWriter(new BufferedWriter(new OutputStreamWriter(new FileOutputStream(getPublicKeyFile()), "UTF-8")));
+		} catch (UnsupportedEncodingException e) {
+			publicPemWriter = new PemWriter(new BufferedWriter(new FileWriter(getPublicKeyFile())));
+		}
 		publicPemWriter.writeObject(new PemObject("PUBLIC KEY", getKeyPair().getPublic().getEncoded()));
 		publicPemWriter.flush();
 		publicPemWriter.close();
-		PemWriter privatePemWriter = new PemWriter(new BufferedWriter(new FileWriter(getPrivateKeyFile())));
+		PemWriter privatePemWriter;
+		try {
+			privatePemWriter = new PemWriter(new BufferedWriter(new OutputStreamWriter(new FileOutputStream(getPrivateKeyFile()), "UTF-8")));
+		} catch (UnsupportedEncodingException e) {
+			privatePemWriter = new PemWriter(new BufferedWriter(new FileWriter(getPrivateKeyFile())));
+		}
 		privatePemWriter.writeObject(new PemObject("RSA PRIVATE KEY", getKeyPair().getPrivate().getEncoded()));
 		privatePemWriter.flush();
 		privatePemWriter.close();
 	}
-	
+
 	private void checkState() {
 		if (!isLoaded()) {
 			throw new IllegalStateException("Config isn't loaded yet!");

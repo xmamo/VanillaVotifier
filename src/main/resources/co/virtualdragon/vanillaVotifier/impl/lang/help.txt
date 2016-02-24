@@ -9,6 +9,6 @@ restart                 Restarts the VanillaVotifier server.
 stop                    Stops the VanillaVotifier server.
 test-query <query>      Sends an enciphered query to VanillaVotifier itself. For
                         debugging purposes only.
-test-vote <IGN>         Sends a vote as <IGN> to VanillaVotifier itself. For
+test-vote <IGN>         Sends a vote as IGN to VanillaVotifier itself. For
                         debugging purposes only.
 ================================================================================

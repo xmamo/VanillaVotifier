@@ -21,8 +21,8 @@ import java.util.Map.Entry;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import co.virtualdragon.vanillaVotifier.Logger;
 import java.io.BufferedWriter;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
 
 public class VanillaVotifierLogger implements Logger {
 
@@ -48,7 +48,11 @@ public class VanillaVotifierLogger implements Logger {
 			string = ExceptionUtils.getStackTrace((Throwable) object);
 		}
 		synchronized (System.out) {
-			System.out.print(string);
+			try {
+				System.out.print(new String(string.getBytes(), "UTF-8"));
+			} catch (Exception e) { // UnsupportedEncodingException
+				System.out.println(string);
+			}
 		}
 		initWriterIfInitialized();
 		if (logWriter != null) {
@@ -95,9 +99,9 @@ public class VanillaVotifierLogger implements Logger {
 	private void initWriterIfInitialized() {
 		if (logWriter == null && votifier.getConfig().isLoaded()) {
 			try {
-				logWriter = new BufferedWriter(new FileWriter(votifier.getConfig().getLogFile()));
+				logWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(votifier.getConfig().getLogFile()), "UTF-8"));
 			} catch (Exception e) {
-				// Ignoring.
+				// FileNotFoundException, UnsupportedEncodingException: ignoring.
 			}
 		}
 	}
