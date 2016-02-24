@@ -36,7 +36,6 @@ import java.net.BindException;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Scanner;
 import org.json.JSONException;
 import co.virtualdragon.vanillaVotifier.Logger;
@@ -67,7 +66,11 @@ public class VanillaVotifier implements Votifier {
 	public static void main(String[] args) {
 		String[] javaVersion = System.getProperty("java.version").split("\\.");
 		if (!(javaVersion.length >= 1 && Integer.parseInt(javaVersion[0]) >= 1 && javaVersion.length >= 2 && Integer.parseInt(javaVersion[1]) >= 6)) {
-			System.out.println("You need at least Java 1.6 to run this program! Current version: " + System.getProperty("java.version") + ".");
+			try {
+				System.out.println(new String(("You need at least Java 1.6 to run this program! Current version: " + System.getProperty("java.version") + ".").getBytes(), "UTF-8"));
+			} catch (Exception e) { // UnsupportedEncodingException
+				System.out.println("You need at least Java 1.6 to run this program! Current version: " + System.getProperty("java.version") + ".");
+			}
 			return;
 		}
 		final VanillaVotifier votifier = new VanillaVotifier();
@@ -80,8 +83,8 @@ public class VanillaVotifier implements Votifier {
 			String command;
 			try {
 				command = in.nextLine();
-			} catch (NoSuchElementException e) {
-				// Can only happen at unexpected program interruption (i. e. CTRL-C). Ignoring.
+			} catch (Exception e) {
+				// NoSuchElementException: Can only happen at unexpected program interruption (i. e. CTRL-C). Ignoring.
 				continue;
 			}
 			if (command.equalsIgnoreCase("stop") || command.toLowerCase().startsWith("stop ")) {
@@ -193,7 +196,6 @@ public class VanillaVotifier implements Votifier {
 			} else {
 				votifier.getLogger().printlnTranslation("s33");
 			}
-
 		}
 	}
 

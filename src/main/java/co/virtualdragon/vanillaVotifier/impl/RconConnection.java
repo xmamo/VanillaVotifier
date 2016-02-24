@@ -69,9 +69,10 @@ public class RconConnection implements Rcon {
 	public synchronized boolean isConnected() {
 		if (socket != null) {
 			try {
-				System.out.println(sendRequest(new VanillaVotifierPacket(requestId, Type.COMMAND, null)));
+				sendRequest(new VanillaVotifierPacket(requestId, Type.COMMAND, null));
 				return true;
 			} catch (Exception e) {
+				// UnsupportedEncodingException, IOException
 			}
 		}
 		return false;

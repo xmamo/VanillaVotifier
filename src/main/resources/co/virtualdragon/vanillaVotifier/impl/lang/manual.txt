@@ -14,14 +14,14 @@ Here is a short description of all settings you can configure in the file.
 updated, it can rely on this setting to see if the config is outdated. Please
 don't touch this setting!
 
+"log-file" is the location of the log file
+
 "ip" and "port" are the IP and the port you want VanillaVotifier to run on.
 Nothing special here.
 
 "key-pair-files/public" and "key-pair-files/private" are the locations of the
 public and private RSA POM files VanillaVotifier needs to work (for more
-information, please read the COMMANDS section). Best thing would be to leave
-the default ones or to generate new ones through the "gen-key-pair" command.
-You can also look up some on-line tools to generate some RSA keys for yourself.
+information, please read the COMMANDS section).
 
 "rcon/ip" and "rcon/port" are the IP and the port of the RCon-enabled Minecraft
 server you want VanillaVotifier to send commands to. Again, nothing special
@@ -44,13 +44,13 @@ VanillaVotifier server, "restart" restarts VanillaVotifier, thus updting its
 config, "info" displays some information about VanillaVotifier itself (like its
 version and the third party libraries used).
 
-A more advanced command is "gen-key-pair". All votifier sites and servers (like
-this one) use RSA, basically a way to send data securely between hosts. To
+A more advanced command is "gen-key-pair". All votifier websites and servers
+(like this one) use RSA, basically a way to send data securely between hosts. To
 work, RSA needs to have two keys, a public and a private one. It's not really
 important to know what this keys are or what they do, but it's important to know
 that they are needed to make votifier programs work. When you first start
 VanillaVotifier, the two RSA keys are generated for you, but if you want to
-generate new ones, use the command "gen-key-pair".
+generate new ones, you can use the command "gen-key-pair".
 
 Lastly, there are two debugging comands: "test-vote" and "test-query".
 Basically, whenever someone votes for your server, a string of data is sent to
