@@ -42,7 +42,7 @@ public class PropertiesLanguagePack implements LanguagePack {
 	public String getString(String key, Entry<String, Object>... substitutions) {
 		String string = null;
 		if (bundle.containsKey(key)) {
-			string = bundle.getString(key).replaceAll("\\R", System.lineSeparator());
+			string = bundle.getString(key).replaceAll("\\u000D\\u000A|[\\u000A\\u000B\\u000C\\u000D\\u0085\\u2028\\u2029]", System.lineSeparator());
 		} else if (bundle.containsKey(key + "-location")) {
 			String resource = getString(key + "-location");
 			if (resource == null) {
@@ -63,7 +63,7 @@ public class PropertiesLanguagePack implements LanguagePack {
 			} catch (IOException e) {
 				// Can't happen.
 			}
-			string = stringBuilder.toString().replaceAll("\\R", System.lineSeparator());
+			string = stringBuilder.toString().replaceAll("\\u000D\\u000A|[\\u000A\\u000B\\u000C\\u000D\\u0085\\u2028\\u2029]", System.lineSeparator());
 		}
 		if (substitutions == null || string == null) {
 			return string;
