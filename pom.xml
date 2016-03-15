@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-Copyright (C) 2015 VirtualDragon
+Copyright (C) 2015 Matteo Morena
 
 This program is free software: you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -72,7 +72,7 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
 							<mainClass>co.virtualdragon.vanillaVotifier.impl.VanillaVotifier</mainClass>
 						</manifest>
 						<manifestEntries>
-							<Built-By>VirtualDragon</Built-By>
+							<Built-By>Matteo Morena</Built-By>
 						</manifestEntries>
 					</archive>
 				</configuration>
