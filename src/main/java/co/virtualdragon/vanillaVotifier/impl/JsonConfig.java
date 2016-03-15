@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2015 VirtualDragon
  *
  * This program is free software: you can redistribute it and/or modify it under
@@ -74,7 +74,7 @@ public class JsonConfig implements Config {
 				stringBuilder.append((char) i);
 			}
 			BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(configFile));
-			for (char c : stringBuilder.toString().replaceAll("\\u000D\\u000A|[\\u000A\\u000B\\u000C\\u000D\\u0085\\u2028\\u2029]", System.lineSeparator()).toCharArray()) {
+			for (char c : stringBuilder.toString().replaceAll("\\u000D\\u000A|[\\u000A\\u000B\\u000C\\u000D\\u0085\\u2028\\u2029]", System.getProperty("line.separator")).toCharArray()) {
 				out.write((int) c);
 			}
 			out.flush();
