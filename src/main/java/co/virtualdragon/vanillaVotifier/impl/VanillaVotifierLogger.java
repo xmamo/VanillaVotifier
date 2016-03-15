@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2015 VirtualDragon
  *
  * This program is free software: you can redistribute it and/or modify it under
@@ -16,13 +16,13 @@
  */
 package co.virtualdragon.vanillaVotifier.impl;
 
-import co.virtualdragon.vanillaVotifier.Votifier;
-import java.util.Map.Entry;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import co.virtualdragon.vanillaVotifier.Logger;
+import co.virtualdragon.vanillaVotifier.Votifier;
 import java.io.BufferedWriter;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
+import java.util.Map.Entry;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 public class VanillaVotifierLogger implements Logger {
 
@@ -73,7 +73,7 @@ public class VanillaVotifierLogger implements Logger {
 
 	@Override
 	public void println(Object object) {
-		print(object + System.lineSeparator());
+		print(object + System.getProperty("line.separator"));
 	}
 
 	@Override

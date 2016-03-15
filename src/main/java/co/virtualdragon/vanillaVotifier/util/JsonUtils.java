@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2015 VirtualDragon
  *
  * This program is free software: you can redistribute it and/or modify it under
@@ -31,9 +31,9 @@ public class JsonUtils {
 					break;
 				}
 			}
-			prettyString += prettyStringLine + System.lineSeparator();
+			prettyString += prettyStringLine + System.getProperty("line.separator");
 		}
-		return prettyString.substring(0, prettyString.length() - System.lineSeparator().length());
+		return prettyString.substring(0, prettyString.length() - System.getProperty("line.separator").length());
 	}
 
 	public static boolean merge(JSONObject from, JSONObject to) {
