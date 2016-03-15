@@ -1,5 +1,5 @@
-/* 
- * Copyright (C) 2015 VirtualDragon
+/*
+ * Copyright (C) 2015 Matteo Morena
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -21,6 +21,6 @@ import java.util.Map.Entry;
 public interface LanguagePack {
 
 	String getString(String key);
-	
+
 	String getString(String key, Entry<String, Object>... substitutions);
 }

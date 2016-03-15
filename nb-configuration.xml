@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-Copyright (C) 2015 VirtualDragon
+Copyright (C) 2015 Matteo Morena
 
 This program is free software: you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -24,7 +24,7 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
 	-->
 	<properties xmlns="http://www.netbeans.org/ns/maven-properties-data/1">
 		<!--
-		Properties that influence various parts of the IDE, especially code formatting and the like. 
+		Properties that influence various parts of the IDE, especially code formatting and the like.
 		You can copy and paste the single properties, into the pom.xml file and the IDE will pick them up.
 		That way multiple projects can share the same settings (useful for formatting rules for example).
 		Any value defined here will override the pom.xml file value but is only applicable to the current project.

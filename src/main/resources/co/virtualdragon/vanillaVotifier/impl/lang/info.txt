@@ -16,5 +16,5 @@ VanillaVotifier is distributed under the GNU General Public License, version 3.
 For more information, type "license" or go to
 http://www.gnu.org/licenses/gpl-3.0-standalone.html
 
-Source is avaiable at https://github.com/VirtualDragon/VanillaVotifier
+Source is avaiable at https://github.com/Mamo96/VanillaVotifier
 ================================================================================
