@@ -12,7 +12,7 @@ Once downloaded, you can startup the program with `java -jar VanillaVotifier.jar
 Please note that the port for VanillaVotifier configured has to be opened! In Linux, this can be achived with `iptables -I INPUT -p tcp --dport <VanillaVotifier port> -j ACCEPT`.
 
 ## Usage ##
-For a list of all possible commands, you can use the `help` command. For a more detailed explanation of what every command does, you can type `manua` to read through VanillaVotifier's manual, however if you don't want to start VanillaVotifier to read it, you can go [here](https://raw.githubusercontent.com/xMamo/VanillaVotifier/master/src/main/resources/co/virtualdragon/vanillaVotifier/impl/lang/manual.txt) instead.
+For a list of all possible commands, you can use the `help` command. For a more detailed explanation of what every command does, you can type `manual` to read through VanillaVotifier's manual, however if you don't want to start VanillaVotifier to read it, you can go [here](https://raw.githubusercontent.com/xMamo/VanillaVotifier/master/src/main/resources/co/virtualdragon/vanillaVotifier/impl/lang/manual.txt) instead.
 
 ## Note for Minecraft 1.9+ ##
 Due to [#11](https://github.com/xMamo/VanillaVotifier/issues/11), some commands may produce a server crash. Take the suggestion of Iffy and Morpheus and use scoreboard commands instead. For example, if you want to give an apple to voters, create a dummy score called `vote` and increment it with `scoreboard players add ${user-name} vote 1` everytime a user votes; also add an always loaded clock to your world which constantly executes the two following commands: `give @a[score_vote_min=1] minecraft:apple` and `scoreboard players remove @a[score_vote_min=1] vote 1`.
