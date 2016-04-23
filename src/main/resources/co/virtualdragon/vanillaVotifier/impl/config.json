@@ -14,7 +14,7 @@
 			"password": "password",
 			"commands": [
 				"tellraw @a {\"text\":\"${user-name} has just voted for this server on ${service-name}. Thanks!\",\"color\":\"yellow\"}",
-				"scoreboard players set ${user-name} voted 1"
+				"scoreboard players add ${user-name} voted 1"
 			]
 		}
 	]
