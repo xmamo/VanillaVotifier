@@ -264,7 +264,7 @@ public class JsonConfig implements Config {
 		JSONObject config = new JSONObject();
 		config.put("config-version", getConfigVersion());
 		config.put("log-file", getLogFile().getPath());
-		config.put("ip", getInetSocketAddress().getHostString());
+		config.put("ip", getInetSocketAddress().getAddress().toString());
 		config.put("port", getInetSocketAddress().getPort());
 		config.put("key-pair-files", new JSONObject() {
 			{
@@ -277,7 +277,7 @@ public class JsonConfig implements Config {
 				for (final RconConfig rconConfig : rconConfigs) {
 					put(new JSONObject() {
 						{
-							put("ip", rconConfig.getInetSocketAddress().getHostString());
+							put("ip", rconConfig.getInetSocketAddress().getAddress().toString());
 							put("port", rconConfig.getInetSocketAddress().getPort());
 							put("password", rconConfig.getPassword());
 							put("commands", rconConfig.getCommands());
