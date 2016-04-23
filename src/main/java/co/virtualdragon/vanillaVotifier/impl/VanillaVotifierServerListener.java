@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2015 Matteo Morena
  *
  * This program is free software: you can redistribute it and/or modify it under
@@ -19,7 +19,6 @@ package co.virtualdragon.vanillaVotifier.impl;
 import co.virtualdragon.vanillaVotifier.Listener;
 import co.virtualdragon.vanillaVotifier.Votifier;
 import co.virtualdragon.vanillaVotifier.event.Event;
-import co.virtualdragon.vanillaVotifier.event.server.RconCommandResponseEvent;
 import co.virtualdragon.vanillaVotifier.event.server.ComunicationExceptionEvent;
 import co.virtualdragon.vanillaVotifier.event.server.ConnectionCloseExceptionEvent;
 import co.virtualdragon.vanillaVotifier.event.server.ConnectionClosedEvent;
@@ -28,6 +27,7 @@ import co.virtualdragon.vanillaVotifier.event.server.ConnectionEstablishedEvent;
 import co.virtualdragon.vanillaVotifier.event.server.ConnectionInputStreamCloseExceptionEvent;
 import co.virtualdragon.vanillaVotifier.event.server.DecryptInputExceptionEvent;
 import co.virtualdragon.vanillaVotifier.event.server.InvalidRequestEvent;
+import co.virtualdragon.vanillaVotifier.event.server.RconCommandResponseEvent;
 import co.virtualdragon.vanillaVotifier.event.server.RconExceptionEvent;
 import co.virtualdragon.vanillaVotifier.event.server.SendingRconCommandEvent;
 import co.virtualdragon.vanillaVotifier.event.server.ServerAwaitingTaskCompletionEvent;
@@ -65,7 +65,7 @@ public class VanillaVotifierServerListener implements Listener {
 		} else if (event instanceof SendingRconCommandEvent) {
 			SendingRconCommandEvent sendingRconCommandEvent = (SendingRconCommandEvent) event;
 			votifier.getLogger().printlnTranslation("s5",
-					new SimpleEntry<String, Object>("ip", sendingRconCommandEvent.getRcon().getRconConfig().getInetSocketAddress().getHostString()),
+					new SimpleEntry<String, Object>("ip", sendingRconCommandEvent.getRcon().getRconConfig().getInetSocketAddress().getAddress().toString()),
 					new SimpleEntry<String, Object>("port", sendingRconCommandEvent.getRcon().getRconConfig().getInetSocketAddress().getPort()),
 					new SimpleEntry<String, Object>("command", sendingRconCommandEvent.getCommand()));
 		} else if (event instanceof RconCommandResponseEvent) {
