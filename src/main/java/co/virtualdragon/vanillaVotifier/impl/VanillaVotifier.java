@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2015 Matteo Morena
  *
  * This program is free software: you can redistribute it and/or modify it under
@@ -21,6 +21,7 @@ import co.virtualdragon.vanillaVotifier.Config;
 import co.virtualdragon.vanillaVotifier.Config.RconConfig;
 import co.virtualdragon.vanillaVotifier.LanguagePack;
 import co.virtualdragon.vanillaVotifier.Listener;
+import co.virtualdragon.vanillaVotifier.Logger;
 import co.virtualdragon.vanillaVotifier.Rcon;
 import co.virtualdragon.vanillaVotifier.Server;
 import co.virtualdragon.vanillaVotifier.Tester;
@@ -32,14 +33,13 @@ import co.virtualdragon.vanillaVotifier.exception.InvalidPublicKeyFileException;
 import co.virtualdragon.vanillaVotifier.exception.PrivateKeyFileNotFoundException;
 import co.virtualdragon.vanillaVotifier.exception.PublicKeyFileNotFoundException;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.net.BindException;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 import org.json.JSONException;
-import co.virtualdragon.vanillaVotifier.Logger;
-import java.io.FileNotFoundException;
 
 public class VanillaVotifier implements Votifier {
 
@@ -52,6 +52,8 @@ public class VanillaVotifier implements Votifier {
 	private final ArrayList<Rcon> rcons;
 	private final VanillaVotifierTester tester;
 
+	private boolean reportExceptions;
+
 	{
 		languagePack = new PropertiesLanguagePack("co/virtualdragon/vanillaVotifier/impl/lang/lang");
 		configFile = new File("config.json");
@@ -61,6 +63,14 @@ public class VanillaVotifier implements Votifier {
 		server = new VanillaVotifierServer(this);
 		rcons = new ArrayList<Rcon>();
 		tester = new VanillaVotifierTester(this);
+	}
+
+	public VanillaVotifier() {
+		this(false);
+	}
+
+	public VanillaVotifier(boolean reportExceptions) {
+		this.reportExceptions = reportExceptions;
 	}
 
 	public static void main(String[] args) {
@@ -73,12 +83,22 @@ public class VanillaVotifier implements Votifier {
 			}
 			return;
 		}
-		final VanillaVotifier votifier = new VanillaVotifier();
+
+		VanillaVotifier votifier = new VanillaVotifier();
+		for (String arg : args) {
+			if (arg.equalsIgnoreCase("report-exceptions")) {
+				votifier.reportExceptions = true;
+			} else {
+				votifier.getLogger().printlnTranslation("s55", new SimpleEntry<String, Object>("option", arg));
+				return;
+			}
+		}
 		votifier.getLogger().printlnTranslation("s42");
 		if (!(loadConfig(votifier) && startServer(votifier))) {
 			return;
 		}
 		Scanner in = new Scanner(System.in);
+
 		while (true) {
 			String command;
 			try {
@@ -286,5 +306,10 @@ public class VanillaVotifier implements Votifier {
 	@Override
 	public Tester getTester() {
 		return tester;
+	}
+
+	@Override
+	public boolean areExceptionsReported() {
+		return reportExceptions;
 	}
 }

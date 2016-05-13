@@ -19,6 +19,7 @@ package co.virtualdragon.vanillaVotifier.impl;
 import co.virtualdragon.vanillaVotifier.Listener;
 import co.virtualdragon.vanillaVotifier.Votifier;
 import co.virtualdragon.vanillaVotifier.event.Event;
+import co.virtualdragon.vanillaVotifier.event.ExceptionEvent;
 import co.virtualdragon.vanillaVotifier.event.server.ComunicationExceptionEvent;
 import co.virtualdragon.vanillaVotifier.event.server.ConnectionCloseExceptionEvent;
 import co.virtualdragon.vanillaVotifier.event.server.ConnectionClosedEvent;
@@ -119,6 +120,10 @@ public class VanillaVotifierServerListener implements Listener {
 			votifier.getLogger().printlnTranslation("s54");
 		} else if (event instanceof ServerStoppedEvent) {
 			votifier.getLogger().printlnTranslation("s14");
+		}
+
+		if (event instanceof ExceptionEvent && votifier.areExceptionsReported()) {
+			votifier.getLogger().print(((ExceptionEvent) event).getException());
 		}
 	}
 }

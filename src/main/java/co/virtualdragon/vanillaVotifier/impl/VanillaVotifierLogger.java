@@ -54,7 +54,7 @@ public class VanillaVotifierLogger implements Logger {
 				System.out.println(string);
 			}
 		}
-		initWriterIfInitialized();
+		initWriterIfVotifierIsLoaded();
 		if (logWriter != null) {
 			synchronized (logWriter) {
 				buffer.append(string);
@@ -96,7 +96,7 @@ public class VanillaVotifierLogger implements Logger {
 		println(votifier.getLanguagePack().getString(key, substitutions));
 	}
 
-	private void initWriterIfInitialized() {
+	private void initWriterIfVotifierIsLoaded() {
 		if (logWriter == null && votifier.getConfig().isLoaded()) {
 			try {
 				logWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(votifier.getConfig().getLogFile()), "UTF-8"));
