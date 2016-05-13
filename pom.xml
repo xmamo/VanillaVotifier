@@ -19,7 +19,7 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>co.virtualdragon</groupId>
 	<artifactId>VanillaVotifier</artifactId>
-	<version>3.3.3</version>
+	<version>3.3.4</version>
 	<name>VanillaVotifier</name>
 	<packaging>jar</packaging>
 	<dependencies>

@@ -21,7 +21,7 @@ import org.json.JSONObject;
 public class JsonUtils {
 
 	public static String jsonToPrettyString(JSONObject jsonObject) {
-		String[] prettyStringLines = jsonObject.toString(1).split("\n");
+		String[] prettyStringLines = jsonObject.toString(1).split("\\u000D\\u000A|[\\u000A\\u000B\\u000C\\u000D\\u0085\\u2028\\u2029]");
 		String prettyString = "";
 		for (String prettyStringLine : prettyStringLines) {
 			for (int i = 0; i < prettyStringLine.length(); i++) {

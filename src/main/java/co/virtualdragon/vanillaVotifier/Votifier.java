@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2015 Matteo Morena
  *
  * This program is free software: you can redistribute it and/or modify it under
@@ -33,4 +33,6 @@ public interface Votifier {
 	List<Rcon> getRcons();
 
 	Tester getTester();
+
+	boolean areExceptionsReported();
 }
