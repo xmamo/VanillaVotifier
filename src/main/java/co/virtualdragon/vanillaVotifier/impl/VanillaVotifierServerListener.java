@@ -123,7 +123,7 @@ public class VanillaVotifierServerListener implements Listener {
 		}
 
 		if (event instanceof ExceptionEvent && votifier.areExceptionsReported()) {
-			votifier.getLogger().print(((ExceptionEvent) event).getException());
+			votifier.getLogger().println(((ExceptionEvent) event).getException());
 		}
 	}
 }
