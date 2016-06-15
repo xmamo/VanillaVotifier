@@ -1,0 +1,4 @@
+============================== OPZIONI DISPONIBILI =============================
+-help              Visualizza tutte le opzioni disponibili.
+-report-exceptions Riporta tutte le eccezioni, in aggiunta agli errori.
+================================================================================
