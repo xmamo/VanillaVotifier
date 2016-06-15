@@ -18,7 +18,6 @@
 package mamo.vanillaVotifier;
 
 public interface Vote {
-
 	String getServiceName();
 
 	String getUserName();
