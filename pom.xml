@@ -1,27 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-Copyright (C) 2015 Matteo Morena
+  ~ Copyright (C) 2016  Matteo Morena
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
 
-This program is free software: you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free Software
-Foundation, either version 3 of the License, or (at your option) any later
-version.
-
-This program is distributed in the hope that it will be useful, but WITHOUT
-ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License along with
-this program.  If not, see <http://www.gnu.org/licenses/>.
--->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>co.virtualdragon</groupId>
+	<groupId>mamo</groupId>
 	<artifactId>VanillaVotifier</artifactId>
-	<version>3.4.0</version>
-	<name>VanillaVotifier</name>
-	<packaging>jar</packaging>
+	<version>3.5.0</version>
 	<dependencies>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
@@ -55,7 +54,7 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
 			<resource>
 				<directory>src/main/resources</directory>
 				<includes>
-					<include>co/virtualdragon/vanillaVotifier/impl/lang/info.txt</include>
+					<include>mamo/vanillaVotifier/impl/lang/info.txt</include>
 				</includes>
 				<filtering>true</filtering>
 			</resource>
@@ -69,7 +68,7 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
 					<archive>
 						<index>true</index>
 						<manifest>
-							<mainClass>co.virtualdragon.vanillaVotifier.impl.VanillaVotifier</mainClass>
+							<mainClass>mamo.vanillaVotifier.impl.VanillaVotifier</mainClass>
 						</manifest>
 						<manifestEntries>
 							<Built-By>Matteo Morena</Built-By>
@@ -100,7 +99,7 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
 							</filters>
 							<transformers>
 								<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-									<mainClass>co.virtualdragon.vanillaVotifier.impl.VanillaVotifier</mainClass>
+									<mainClass>mamo.vanillaVotifier.impl.VanillaVotifier</mainClass>
 								</transformer>
 							</transformers>
 						</configuration>

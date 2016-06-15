@@ -1,0 +1,20 @@
+===================================== INFO =====================================
+VanillaVotifier ${pom.version}, developed by Matteo Morena (A. K. A. Mamo).
+
+Third party libraries used:
+
+ * Bouncy Castle Crypto API, licensed under the MIT license:
+   https://www.bouncycastle.org/license.html
+
+ * Commons Lang, licensed under the Apache License, version 2.0:
+   http://www.apache.org/licenses/LICENSE-2.0
+
+ * JSON in Java, licensed under a custom license:
+   http://www.json.org/license.html
+
+VanillaVotifier is distributed under the GNU General Public License, version 3.
+For more information, type "license" or go to
+http://www.gnu.org/licenses/gpl-3.0-standalone.html
+
+Source is available at https://github.com/xMamo/VanillaVotifier
+================================================================================
