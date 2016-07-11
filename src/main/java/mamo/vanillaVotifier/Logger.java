@@ -17,18 +17,85 @@
 
 package mamo.vanillaVotifier;
 
+import java.io.BufferedWriter;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
 import java.util.Map.Entry;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
-public interface Logger {
-	void print(Object object);
+public class Logger {
+	private final VanillaVotifier votifier;
+	private final StringBuffer buffer;
 
-	void println(Object object);
+	private BufferedWriter logWriter;
 
-	void printTranslation(String key);
+	{
+		buffer = new StringBuffer();
+	}
 
-	void printTranslation(String key, Entry<String, Object>... replacements);
+	public Logger(VanillaVotifier votifier) {
+		this.votifier = votifier;
+	}
 
-	void printlnTranslation(String key);
+	public void print(Object object) {
+		String string = toString(object);
+		synchronized (System.out) {
+			System.out.print(string);
+		}
+		initWriterIfVotifierIsLoaded();
+		if (logWriter != null) {
+			synchronized (logWriter) {
+				buffer.append(string);
+				try {
+					logWriter.write(buffer.toString());
+					logWriter.flush();
+				} catch (Exception e) {
+					// Ignoring.
+				}
+				buffer.setLength(0);
+			}
+		} else {
+			buffer.append(string);
+		}
+	}
 
-	void printlnTranslation(String key, Entry<String, Object>... replacements);
+	public void println(Object object) {
+		print(toString(object) + System.getProperty("line.separator"));
+	}
+
+	protected String toString(Object object) {
+		String string;
+		if (!(object instanceof Throwable)) {
+			string = object.toString();
+		} else {
+			string = ExceptionUtils.getStackTrace((Throwable) object);
+		}
+		return string;
+	}
+
+	public void printTranslation(String key) {
+		printTranslation(key, new Entry[]{});
+	}
+
+	public void printTranslation(String key, Entry<String, Object>... substitutions) {
+		print(votifier.getLanguagePack().getString(key, substitutions));
+	}
+
+	public void printlnTranslation(String key) {
+		printlnTranslation(key, new Entry[]{});
+	}
+
+	public void printlnTranslation(String key, Entry<String, Object>... substitutions) {
+		println(votifier.getLanguagePack().getString(key, substitutions));
+	}
+
+	private void initWriterIfVotifierIsLoaded() {
+		if (logWriter == null && votifier.getConfig().isLoaded()) {
+			try {
+				logWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(votifier.getConfig().getLogFile())));
+			} catch (Exception e) {
+				// FileNotFoundException, UnsupportedEncodingException: ignoring.
+			}
+		}
+	}
 }

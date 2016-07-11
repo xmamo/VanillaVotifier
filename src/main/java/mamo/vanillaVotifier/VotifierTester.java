@@ -15,27 +15,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package mamo.vanillaVotifier.impl;
+package mamo.vanillaVotifier;
 
-import mamo.vanillaVotifier.Tester;
-import mamo.vanillaVotifier.Vote;
-import mamo.vanillaVotifier.Votifier;
-import mamo.vanillaVotifier.util.RsaUtils;
-
-import javax.crypto.Cipher;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketOptions;
 import java.security.GeneralSecurityException;
+import javax.crypto.Cipher;
+import mamo.vanillaVotifier.util.RsaUtils;
 
-public class VanillaVotifierTester implements Tester {
-	private final Votifier votifier;
+public class VotifierTester {
+	private final VanillaVotifier votifier;
 
-	public VanillaVotifierTester(Votifier votifier) {
+	public VotifierTester(VanillaVotifier votifier) {
 		this.votifier = votifier;
 	}
 
-	@Override
 	public void testVote(Vote vote) throws GeneralSecurityException, IOException {
 		String message = "VOTE\n";
 		if (vote.getServiceName() != null) {
@@ -56,7 +51,6 @@ public class VanillaVotifierTester implements Tester {
 		testQuery(message);
 	}
 
-	@Override
 	public void testQuery(String message) throws GeneralSecurityException, IOException {
 		synchronized (votifier.getConfig()) {
 			Cipher cipher = RsaUtils.getEncryptCipher(votifier.getConfig().getKeyPair().getPublic());

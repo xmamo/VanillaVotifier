@@ -17,10 +17,66 @@
 
 package mamo.vanillaVotifier;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.HashMap;
 import java.util.Map.Entry;
+import java.util.ResourceBundle;
+import org.apache.commons.lang3.text.StrSubstitutor;
 
-public interface LanguagePack {
-	String getString(String key);
+public class LanguagePack {
+	private final ResourceBundle bundle;
 
-	String getString(String key, Entry<String, Object>... substitutions);
+	public LanguagePack(String languagePackName) {
+		bundle = ResourceBundle.getBundle(languagePackName);
+	}
+
+	public String getString(String key) {
+		return getString(key, new Entry[]{});
+	}
+
+	public String getString(String key, Entry<String, Object>... substitutions) {
+		String string = null;
+		if (bundle.containsKey(key)) {
+			string = bundle.getString(key).replaceAll("\\u000D\\u000A|[\\u000A\\u000B\\u000C\\u000D\\u0085\\u2028\\u2029]", System.getProperty("line.separator"));
+		} else if (bundle.containsKey(key + "-location")) {
+			String resource = getString(key + "-location");
+			if (resource == null) {
+				return null;
+			}
+			if (!resource.startsWith("/")) {
+				resource = "/mamo/vanillaVotifier/lang/" + resource;
+			}
+			BufferedReader in = new BufferedReader(new InputStreamReader(LanguagePack.class.getResourceAsStream(resource)));
+			StringBuilder stringBuilder = new StringBuilder();
+			int i;
+			try {
+				while ((i = in.read()) != -1) {
+					stringBuilder.append((char) i);
+				}
+				in.close();
+			} catch (IOException e) {
+				// Can't happen.
+			}
+			string = stringBuilder.toString().replaceAll("\\u000D\\u000A|[\\u000A\\u000B\\u000C\\u000D\\u0085\\u2028\\u2029]", System.getProperty("line.separator"));
+		}
+		if (substitutions == null || string == null) {
+			return string;
+		} else {
+			HashMap<String, Object> substitutionsMap = new HashMap<String, Object>();
+			for (Entry<String, Object> substitution : substitutions) {
+				if (substitution.getValue() != null) {
+					if (!(substitution.getValue() instanceof Throwable)) {
+						substitutionsMap.put(substitution.getKey(), substitution.getValue());
+					} else {
+						substitutionsMap.put(substitution.getKey(), ((Throwable) substitution.getValue()).toString());
+					}
+				} else {
+					substitutionsMap.put(substitution.getKey(), "");
+				}
+			}
+			return new StrSubstitutor(substitutionsMap).replace(string);
+		}
+	}
 }

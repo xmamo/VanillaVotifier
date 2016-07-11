@@ -17,10 +17,26 @@
 
 package mamo.vanillaVotifier;
 
+import java.io.IOException;
 import mamo.vanillaVotifier.exception.InvalidRconPasswordException;
 
-import java.io.IOException;
+public class CommandSender {
+	private boolean loggedIn;
 
-public interface CommandSender {
-	String sendCommand(Rcon rcon, String command) throws IOException, InvalidRconPasswordException;
+	public String sendCommand(Rcon rcon, String command) throws IOException, InvalidRconPasswordException {
+		synchronized (rcon.getRconConfig()) {
+			if (!rcon.isConnected()) {
+				rcon.connect();
+				loggedIn = false;
+			}
+			if (!loggedIn) {
+				if (rcon.sendRequest(new VotifierPacket(rcon.getRequestId(), VotifierPacket.Type.LOG_IN, rcon.getRconConfig().getPassword())).getRequestId() != -1) {
+					loggedIn = true;
+				} else {
+					throw new InvalidRconPasswordException();
+				}
+			}
+			return rcon.sendRequest(new VotifierPacket(rcon.getRequestId(), VotifierPacket.Type.COMMAND, command)).getPayload();
+		}
+	}
 }

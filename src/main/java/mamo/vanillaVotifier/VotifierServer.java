@@ -15,18 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package mamo.vanillaVotifier.impl;
+package mamo.vanillaVotifier;
 
-import mamo.vanillaVotifier.Listener;
-import mamo.vanillaVotifier.Rcon;
-import mamo.vanillaVotifier.Server;
-import mamo.vanillaVotifier.Votifier;
-import mamo.vanillaVotifier.event.Event;
-import mamo.vanillaVotifier.event.server.*;
-import mamo.vanillaVotifier.util.RsaUtils;
-import org.apache.commons.lang3.text.StrSubstitutor;
-
-import javax.crypto.BadPaddingException;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -40,9 +30,32 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import javax.crypto.BadPaddingException;
+import mamo.vanillaVotifier.event.Event;
+import mamo.vanillaVotifier.event.server.ComunicationExceptionEvent;
+import mamo.vanillaVotifier.event.server.ConnectionCloseExceptionEvent;
+import mamo.vanillaVotifier.event.server.ConnectionClosedEvent;
+import mamo.vanillaVotifier.event.server.ConnectionEstablishExceptionEvent;
+import mamo.vanillaVotifier.event.server.ConnectionEstablishedEvent;
+import mamo.vanillaVotifier.event.server.ConnectionInputStreamCloseExceptionEvent;
+import mamo.vanillaVotifier.event.server.DecryptInputExceptionEvent;
+import mamo.vanillaVotifier.event.server.DecryptedInputReceivedEvent;
+import mamo.vanillaVotifier.event.server.EncryptedInputReceivedEvent;
+import mamo.vanillaVotifier.event.server.InvalidRequestEvent;
+import mamo.vanillaVotifier.event.server.RconCommandResponseEvent;
+import mamo.vanillaVotifier.event.server.RconExceptionEvent;
+import mamo.vanillaVotifier.event.server.SendingRconCommandEvent;
+import mamo.vanillaVotifier.event.server.ServerAwaitingTaskCompletionEvent;
+import mamo.vanillaVotifier.event.server.ServerStartedEvent;
+import mamo.vanillaVotifier.event.server.ServerStartingEvent;
+import mamo.vanillaVotifier.event.server.ServerStoppedEvent;
+import mamo.vanillaVotifier.event.server.ServerStoppingEvent;
+import mamo.vanillaVotifier.event.server.VoteEvent;
+import mamo.vanillaVotifier.util.RsaUtils;
+import org.apache.commons.lang3.text.StrSubstitutor;
 
-public class VanillaVotifierServer implements Server {
-	private final Votifier votifier;
+public class VotifierServer {
+	private final VanillaVotifier votifier;
 	private final CopyOnWriteArrayList<Listener> listeners;
 
 	private boolean running;
@@ -53,11 +66,10 @@ public class VanillaVotifierServer implements Server {
 		getListeners().add(new VanillaVotifierServerListener());
 	}
 
-	public VanillaVotifierServer(Votifier votifier) {
+	public VotifierServer(VanillaVotifier votifier) {
 		this.votifier = votifier;
 	}
 
-	@Override
 	public synchronized void start() throws IOException, GeneralSecurityException {
 		if (isRunning()) {
 			throw new IllegalStateException("Server is already running!");
@@ -83,13 +95,13 @@ public class VanillaVotifierServer implements Server {
 									BufferedInputStream in = new BufferedInputStream(socket.getInputStream()); // IOException: handled by try/catch.
 									byte[] request = new byte[((RSAPublicKey) votifier.getConfig().getKeyPair().getPublic()).getModulus().bitLength() / Byte.SIZE];
 									in.read(request); // IOException: handled by try/catch.
-									notifyListeners(new EncryptedInputReceivedEvent(socket, new String(request, "UTF-8"))); // UnsupportedEncodingException: can't happen.
+									notifyListeners(new EncryptedInputReceivedEvent(socket, new String(request)));
 									request = RsaUtils.getDecryptCipher(votifier.getConfig().getKeyPair().getPrivate()).doFinal(request); // IllegalBlockSizeException: can't happen.
-									String requestString = new String(request, "UTF-8"); // UnsupportedEncodingException: can't happen.
+									String requestString = new String(request);
 									notifyListeners(new DecryptedInputReceivedEvent(socket, requestString));
 									String[] requestArray = requestString.split("\n");
 									if ((requestArray.length == 5 || requestArray.length == 6) && requestArray[0].equals("VOTE")) {
-										notifyListeners(new VoteEvent(socket, new VanillaVotifierVote(requestArray[1], requestArray[2], requestArray[3], requestArray[4])));
+										notifyListeners(new VoteEvent(socket, new Vote(requestArray[1], requestArray[2], requestArray[3], requestArray[4], requestArray.length == 6 ? requestArray[5] : null)));
 										HashMap<String, String> substitutions = new HashMap<String, String>();
 										substitutions.put("service-name", requestArray[1]);
 										substitutions.put("user-name", requestArray[2]);
@@ -148,7 +160,6 @@ public class VanillaVotifierServer implements Server {
 		}).start();
 	}
 
-	@Override
 	public synchronized void stop() throws IOException {
 		if (!isRunning()) {
 			throw new IllegalStateException("Server isn't running!");
@@ -158,17 +169,14 @@ public class VanillaVotifierServer implements Server {
 		serverSocket.close();
 	}
 
-	@Override
 	public synchronized boolean isRunning() {
 		return running;
 	}
 
-	@Override
 	public List<Listener> getListeners() {
 		return listeners;
 	}
 
-	@Override
 	public void notifyListeners(Event event) {
 		for (Listener listener : listeners) {
 			listener.onEvent(event, votifier);

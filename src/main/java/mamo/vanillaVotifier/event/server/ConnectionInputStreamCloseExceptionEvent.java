@@ -17,9 +17,8 @@
 
 package mamo.vanillaVotifier.event.server;
 
-import mamo.vanillaVotifier.event.AbstractExceptionEvent;
-
 import java.net.Socket;
+import mamo.vanillaVotifier.event.AbstractExceptionEvent;
 
 public class ConnectionInputStreamCloseExceptionEvent extends AbstractExceptionEvent implements SocketEvent {
 	private final Socket socket;
