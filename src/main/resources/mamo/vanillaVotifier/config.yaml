@@ -1,0 +1,39 @@
+# The config version. Used internally by VanillaVotifier. Please don't touch!
+config-version: 4
+
+# The relatoive path to the directory in which to save the log files.
+# If the directory doesn't exist, it will be created.
+log-directory: "logs"
+
+# The IP address and port of the VanillaVotifier server.
+server:
+ ip: "127.0.0.1"
+ port: 8192
+
+# The relative path to the public and private key files.
+# If one or both of the files don't exist, a new 2048-bit key pair will be generated.
+key-pair-files:
+ public: "public.pem"
+ private: "private.pem"
+
+# A list of RCon servers to connect to as soon as somebody votes for your server.
+rcon-list:
+ -
+  # The IP address, port, and password of the RCon server.
+  # Using a local IP address should be preferred, since the RCon protocol requires passwords to be sent as plaintext.
+  rcon-server:
+   ip: "127.0.0.1"
+   port: 25575
+   password: "password"
+
+  # The commands to send to the RCon server.
+  # "${service-name}" will be replaced with the service the player has voted on (for example MCSL).
+  # "${user-name}" will be replaced with the IGN of the player.
+  # "${address}" will be replaced with the player's IP address.
+  # "${time-stamp}" will be replaced with the time stamp in which the player has voted. Format may vary depending on voting service.
+  #
+  # It is not recommended to use commands such as "/give", "/effect", etc., since they wouldn't work if the player is offline.
+  # Instead, set a certain score (since "/scoreboard players set" commands always work) and handle rewarding through an ingame and always loaded Command Block clock.
+  commands:
+   - "tellraw @a {\"text\":\"${user-name} has just voted for this server on ${service-name}. Thanks!\",\"color\":\"yellow\"}"
+   - "scoreboard players add ${user-name} voted 1"

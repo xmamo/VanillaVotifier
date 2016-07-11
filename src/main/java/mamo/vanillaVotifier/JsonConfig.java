@@ -31,7 +31,6 @@ import java.net.InetSocketAddress;
 import java.security.KeyPair;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
-import java.util.List;
 import mamo.vanillaVotifier.exception.InvalidPrivateKeyFileException;
 import mamo.vanillaVotifier.exception.InvalidPublicKeyFileException;
 import mamo.vanillaVotifier.exception.PrivateKeyFileNotFoundException;
@@ -45,18 +44,8 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
-public class JsonConfig implements Config {
-	private final File configFile;
-
-	private boolean loaded;
-	private int configVersion;
-	private File logFile;
-	private InetSocketAddress inetSocketAddress;
-	private File publicKeyFile;
-	private File privateKeyFile;
-	private KeyPair keyPair;
-	private ArrayList<RconConfig> rconConfigs;
-
+@Deprecated
+public class JsonConfig extends AbstractConfig {
 	public JsonConfig(File configFile) {
 		this.configFile = configFile;
 	}
@@ -155,109 +144,7 @@ public class JsonConfig implements Config {
 	}
 
 	@Override
-	public synchronized boolean isLoaded() {
-		return loaded;
-	}
-
-	@Override
-	public synchronized int getConfigVersion() {
-		checkState();
-		return configVersion;
-	}
-
-	@Override
-	public synchronized File getLogFile() {
-		checkState();
-		return logFile;
-	}
-
-	@Override
-	public synchronized void setLogFile(File location) {
-		checkState();
-		if (location == null) {
-			location = new File("log.log");
-		}
-		logFile = location;
-	}
-
-	@Override
-	public synchronized InetSocketAddress getInetSocketAddress() {
-		checkState();
-		return inetSocketAddress;
-	}
-
-	@Override
-	public synchronized void setInetSocketAddress(InetSocketAddress inetSocketAddress) {
-		checkState();
-		if (inetSocketAddress == null) {
-			inetSocketAddress = new InetSocketAddress("127.0.0.1", 8192);
-		}
-		this.inetSocketAddress = inetSocketAddress;
-	}
-
-	@Override
-	public synchronized File getPublicKeyFile() {
-		checkState();
-		return publicKeyFile;
-	}
-
-	@Override
-	public synchronized void setPublicKeyFile(File location) {
-		checkState();
-		if (location == null) {
-			location = new File("public.pem");
-		}
-		publicKeyFile = location;
-	}
-
-	@Override
-	public synchronized File getPrivateKeyFile() {
-		checkState();
-		return privateKeyFile;
-	}
-
-	@Override
-	public synchronized void setPrivateKeyFile(File location) {
-		checkState();
-		if (location == null) {
-			location = new File("private.pem");
-		}
-		privateKeyFile = location;
-	}
-
-	@Override
-	public synchronized KeyPair getKeyPair() {
-		checkState();
-		return keyPair;
-	}
-
-	@Override
-	public synchronized void setKeyPair(KeyPair keyPair) {
-		checkState();
-		if (keyPair == null) {
-			keyPair = RsaUtils.genKeyPair(2048);
-		}
-		this.keyPair = keyPair;
-	}
-
-	@Override
-	public synchronized void genKeyPair() {
-		genKeyPair(2048);
-	}
-
-	@Override
-	public synchronized void genKeyPair(int keySize) {
-		setKeyPair(RsaUtils.genKeyPair(keySize));
-	}
-
-	@Override
-	public synchronized List<RconConfig> getRconConfigs() {
-		return rconConfigs;
-	}
-
-	@Override
 	public synchronized void save() throws IOException {
-		checkState();
 		JSONObject config = new JSONObject();
 		config.put("config-version", getConfigVersion());
 		config.put("log-file", getLogFile().getPath());
@@ -271,7 +158,7 @@ public class JsonConfig implements Config {
 		});
 		config.put("rcon-list", new JSONArray() {
 			{
-				for (final RconConfig rconConfig : rconConfigs) {
+				for (final RconConfig rconConfig : getRconConfigs()) {
 					put(new JSONObject() {
 						{
 							put("ip", rconConfig.getInetSocketAddress().getAddress().toString());
@@ -295,11 +182,5 @@ public class JsonConfig implements Config {
 		privatePemWriter.writeObject(new PemObject("RSA PRIVATE KEY", getKeyPair().getPrivate().getEncoded()));
 		privatePemWriter.flush();
 		privatePemWriter.close();
-	}
-
-	private void checkState() {
-		if (!isLoaded()) {
-			throw new IllegalStateException("Config isn't loaded yet!");
-		}
 	}
 }
