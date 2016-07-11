@@ -17,12 +17,45 @@
 
 package mamo.vanillaVotifier;
 
-public interface Vote {
-	String getServiceName();
+import java.sql.Timestamp;
+import java.util.Calendar;
 
-	String getUserName();
+public class Vote {
+	private final String serviceName;
+	private final String userName;
+	private final String address;
+	private final String timeStamp;
+	private final String empty;
 
-	String getAddress();
+	public Vote(String serviceName, String userName, String address) {
+		this(serviceName, userName, address, new Timestamp(Calendar.getInstance().getTime().getTime()).toString(), null);
+	}
 
-	String getTimeStamp();
+	public Vote(String serviceName, String userName, String address, String timeStamp, String empty) {
+		this.serviceName = serviceName;
+		this.userName = userName;
+		this.address = address;
+		this.timeStamp = timeStamp;
+		this.empty = empty;
+	}
+
+	public String getServiceName() {
+		return serviceName;
+	}
+
+	public String getUserName() {
+		return userName;
+	}
+
+	public String getAddress() {
+		return address;
+	}
+
+	public String getTimeStamp() {
+		return timeStamp;
+	}
+
+	public String getEmpty() {
+		return empty;
+	}
 }

@@ -28,12 +28,10 @@ public class SendingRconCommandEvent implements RconCommandEvent {
 		this.command = command;
 	}
 
-	@Override
 	public Rcon getRcon() {
 		return rcon;
 	}
 
-	@Override
 	public String getCommand() {
 		return command;
 	}

@@ -15,9 +15,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package mamo.vanillaVotifier.impl;
+package mamo.vanillaVotifier;
 
-import mamo.vanillaVotifier.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.net.BindException;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Scanner;
 import mamo.vanillaVotifier.event.Event;
 import mamo.vanillaVotifier.event.server.ServerStoppedEvent;
 import mamo.vanillaVotifier.exception.InvalidPrivateKeyFileException;
@@ -26,36 +33,27 @@ import mamo.vanillaVotifier.exception.PrivateKeyFileNotFoundException;
 import mamo.vanillaVotifier.exception.PublicKeyFileNotFoundException;
 import org.json.JSONException;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.net.BindException;
-import java.util.AbstractMap.SimpleEntry;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Scanner;
-
-public class VanillaVotifier implements Votifier {
-	private final PropertiesLanguagePack languagePack;
-	private final VanillaVotifierLogger logger;
+public class VanillaVotifier {
+	private final LanguagePack languagePack;
+	private final Logger logger;
 	private final File configFile;
 	private final JsonConfig config;
-	private final RconCommandSender commandSender;
-	private final VanillaVotifierServer server;
+	private final CommandSender commandSender;
+	private final VotifierServer server;
 	private final ArrayList<Rcon> rcons;
-	private final VanillaVotifierTester tester;
+	private final VotifierTester tester;
 
 	private boolean reportExceptions;
 
 	{
-		languagePack = new PropertiesLanguagePack("mamo/vanillaVotifier/impl/lang/lang");
+		languagePack = new LanguagePack("mamo/vanillaVotifier/lang/lang");
 		configFile = new File("config.json");
 		config = new JsonConfig(configFile);
-		logger = new VanillaVotifierLogger(this);
-		commandSender = new RconCommandSender();
-		server = new VanillaVotifierServer(this);
+		logger = new Logger(this);
+		commandSender = new CommandSender();
+		server = new VotifierServer(this);
 		rcons = new ArrayList<Rcon>();
-		tester = new VanillaVotifierTester(this);
+		tester = new VotifierTester(this);
 	}
 
 	public VanillaVotifier() {
@@ -81,7 +79,7 @@ public class VanillaVotifier implements Votifier {
 				votifier.getLogger().printlnTranslation("s58");
 				return;
 			} else {
-				votifier.getLogger().printlnTranslation("s55", new SimpleEntry<String, Object>("option", arg));
+				votifier.getLogger().printlnTranslation("s55", new AbstractMap.SimpleEntry<String, Object>("option", arg));
 				return;
 			}
 		}
@@ -99,7 +97,7 @@ public class VanillaVotifier implements Votifier {
 				// NoSuchElementException: Can only happen at unexpected program interruption (i. e. CTRL+C). Ignoring.
 				continue;
 			} catch (Exception e) {
-				votifier.getLogger().printlnTranslation("s57", new SimpleEntry<String, Object>("exception", e));
+				votifier.getLogger().printlnTranslation("s57", new AbstractMap.SimpleEntry<String, Object>("exception", e));
 				if (!stopServer(votifier)) {
 					System.exit(0); // "return" somehow isn't enough.
 				}
@@ -116,7 +114,7 @@ public class VanillaVotifier implements Votifier {
 				if (command.split(" ").length == 1) {
 					Listener listener = new Listener() {
 						@Override
-						public void onEvent(Event event, Votifier votifier) {
+						public void onEvent(Event event, VanillaVotifier votifier) {
 							if (event instanceof ServerStoppedEvent) {
 								if (loadConfig((VanillaVotifier) votifier) && startServer((VanillaVotifier) votifier)) {
 									votifier.getServer().getListeners().remove(this);
@@ -163,16 +161,16 @@ public class VanillaVotifier implements Votifier {
 				try {
 					votifier.getConfig().save();
 				} catch (Exception e) {
-					votifier.getLogger().printlnTranslation("s21", new SimpleEntry<String, Object>("exception", e));
+					votifier.getLogger().printlnTranslation("s21", new AbstractMap.SimpleEntry<String, Object>("exception", e));
 				}
 				votifier.getLogger().printlnTranslation("s23");
 			} else if (command.equalsIgnoreCase("test-vote") || command.toLowerCase().startsWith("test-vote ")) {
 				String[] commandArgs = command.split(" ");
 				if (commandArgs.length == 2) {
 					try {
-						votifier.getTester().testVote(new VanillaVotifierVote("TesterService", commandArgs[1], votifier.getConfig().getInetSocketAddress().getAddress().getHostName()));
+						votifier.getTester().testVote(new Vote("TesterService", commandArgs[1], votifier.getConfig().getInetSocketAddress().getAddress().getHostName()));
 					} catch (Exception e) { // GeneralSecurityException, IOException
-						votifier.getLogger().printlnTranslation("s27", new SimpleEntry<String, Object>("exception", e));
+						votifier.getLogger().printlnTranslation("s27", new AbstractMap.SimpleEntry<String, Object>("exception", e));
 					}
 				} else {
 					votifier.getLogger().printlnTranslation("s26");
@@ -180,9 +178,9 @@ public class VanillaVotifier implements Votifier {
 			} else if (command.equalsIgnoreCase("test-query") || command.toLowerCase().startsWith("test-query ")) {
 				if (command.split(" ").length >= 2) {
 					try {
-						votifier.getTester().testQuery(command.replaceFirst("test-query ", "").replaceAll("\t", "\n"));
+						votifier.getTester().testQuery(command.replaceFirst("test-query ", "").replaceAll("---", "\n"));
 					} catch (Exception e) { // GeneralSecurityException, IOException
-						votifier.getLogger().printlnTranslation("s35", new SimpleEntry<String, Object>("exception", e));
+						votifier.getLogger().printlnTranslation("s35", new AbstractMap.SimpleEntry<String, Object>("exception", e));
 					}
 				} else {
 					votifier.getLogger().printlnTranslation("s34");
@@ -222,13 +220,13 @@ public class VanillaVotifier implements Votifier {
 		try {
 			votifier.getConfig().load();
 			votifier.getRcons().clear();
-			for (Config.RconConfig rconConfig : votifier.getConfig().getRconConfigs()) {
-				votifier.getRcons().add(new RconConnection(rconConfig));
+			for (RconConfig rconConfig : votifier.getConfig().getRconConfigs()) {
+				votifier.getRcons().add(new Rcon(rconConfig));
 			}
 			votifier.getLogger().printlnTranslation("s25");
 			return true;
 		} catch (JSONException e) {
-			votifier.getLogger().printlnTranslation("s45", new SimpleEntry<String, Object>("exception", e.getMessage().replaceAll("'", "\"")));
+			votifier.getLogger().printlnTranslation("s45", new AbstractMap.SimpleEntry<String, Object>("exception", e.getMessage().replaceAll("'", "\"")));
 		} catch (PublicKeyFileNotFoundException e) {
 			votifier.getLogger().printlnTranslation("s49");
 		} catch (PrivateKeyFileNotFoundException e) {
@@ -241,10 +239,10 @@ public class VanillaVotifier implements Votifier {
 			if (votifier.configFile.exists()) {
 				votifier.getLogger().printlnTranslation("s18");
 			} else {
-				votifier.getLogger().printlnTranslation("s15", new SimpleEntry<String, Object>("exception", e));
+				votifier.getLogger().printlnTranslation("s15", new AbstractMap.SimpleEntry<String, Object>("exception", e));
 			}
 		} catch (Exception e) {
-			votifier.getLogger().printlnTranslation("s15", new SimpleEntry<String, Object>("exception", e));
+			votifier.getLogger().printlnTranslation("s15", new AbstractMap.SimpleEntry<String, Object>("exception", e));
 		}
 		return false;
 	}
@@ -254,9 +252,9 @@ public class VanillaVotifier implements Votifier {
 			votifier.getServer().start();
 			return true;
 		} catch (BindException e) {
-			votifier.getLogger().printlnTranslation("s38", new SimpleEntry<String, Object>("port", votifier.getConfig().getInetSocketAddress().getPort()));
+			votifier.getLogger().printlnTranslation("s38", new AbstractMap.SimpleEntry<String, Object>("port", votifier.getConfig().getInetSocketAddress().getPort()));
 		} catch (Exception e) {
-			votifier.getLogger().printlnTranslation("s13", new SimpleEntry<String, Object>("exception", e));
+			votifier.getLogger().printlnTranslation("s13", new AbstractMap.SimpleEntry<String, Object>("exception", e));
 		}
 		return false;
 	}
@@ -266,47 +264,39 @@ public class VanillaVotifier implements Votifier {
 			votifier.getServer().stop();
 			return true;
 		} catch (Exception e) {
-			votifier.getLogger().printlnTranslation("s12", new SimpleEntry<String, Object>("exception", e));
+			votifier.getLogger().printlnTranslation("s12", new AbstractMap.SimpleEntry<String, Object>("exception", e));
 		}
 		return false;
 	}
 
-	@Override
 	public LanguagePack getLanguagePack() {
 		return languagePack;
 	}
 
-	@Override
 	public Logger getLogger() {
 		return logger;
 	}
 
-	@Override
 	public Config getConfig() {
 		return config;
 	}
 
-	@Override
 	public CommandSender getCommandSender() {
 		return commandSender;
 	}
 
-	@Override
-	public Server getServer() {
+	public VotifierServer getServer() {
 		return server;
 	}
 
-	@Override
 	public List<Rcon> getRcons() {
 		return rcons;
 	}
 
-	@Override
-	public Tester getTester() {
+	public VotifierTester getTester() {
 		return tester;
 	}
 
-	@Override
 	public boolean areExceptionsReported() {
 		return reportExceptions;
 	}

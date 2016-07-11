@@ -15,9 +15,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package mamo.vanillaVotifier.impl;
+package mamo.vanillaVotifier;
 
-import mamo.vanillaVotifier.Config;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.security.KeyPair;
+import java.security.spec.InvalidKeySpecException;
+import java.util.ArrayList;
+import java.util.List;
 import mamo.vanillaVotifier.exception.InvalidPrivateKeyFileException;
 import mamo.vanillaVotifier.exception.InvalidPublicKeyFileException;
 import mamo.vanillaVotifier.exception.PrivateKeyFileNotFoundException;
@@ -30,13 +44,6 @@ import org.bouncycastle.util.io.pem.PemWriter;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
-
-import java.io.*;
-import java.net.InetSocketAddress;
-import java.security.KeyPair;
-import java.security.spec.InvalidKeySpecException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class JsonConfig implements Config {
 	private final File configFile;
@@ -118,7 +125,7 @@ public class JsonConfig implements Config {
 		rconConfigs = new ArrayList<RconConfig>();
 		for (int i = 0; i < config.getJSONArray("rcon-list").length(); i++) {
 			JSONObject jsonObject = config.getJSONArray("rcon-list").getJSONObject(i);
-			VanillaVotifierRconConfig rconConfig = new VanillaVotifierRconConfig(new InetSocketAddress(jsonObject.getString("ip"), jsonObject.getInt("port")), jsonObject.getString("password"));
+			RconConfig rconConfig = new RconConfig(new InetSocketAddress(jsonObject.getString("ip"), jsonObject.getInt("port")), jsonObject.getString("password"));
 			for (int j = 0; j < jsonObject.getJSONArray("commands").length(); j++) {
 				rconConfig.getCommands().add(jsonObject.getJSONArray("commands").getString(j));
 			}
@@ -276,33 +283,15 @@ public class JsonConfig implements Config {
 				}
 			}
 		});
-		String configString;
-		try {
-			configString = new String(JsonUtils.jsonToPrettyString(config).getBytes(), "UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			configString = JsonUtils.jsonToPrettyString(config);
-		}
-		BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(configFile));
-		for (char c : configString.toCharArray()) {
-			out.write(c);
-		}
+		BufferedWriter out = new BufferedWriter(new FileWriter(configFile));
+		out.write(JsonUtils.jsonToPrettyString(config));
 		out.flush();
 		out.close();
-		PemWriter publicPemWriter;
-		try {
-			publicPemWriter = new PemWriter(new BufferedWriter(new OutputStreamWriter(new FileOutputStream(getPublicKeyFile()), "UTF-8")));
-		} catch (UnsupportedEncodingException e) {
-			publicPemWriter = new PemWriter(new BufferedWriter(new FileWriter(getPublicKeyFile())));
-		}
+		PemWriter publicPemWriter = new PemWriter(new BufferedWriter(new FileWriter(getPublicKeyFile())));
 		publicPemWriter.writeObject(new PemObject("PUBLIC KEY", getKeyPair().getPublic().getEncoded()));
 		publicPemWriter.flush();
 		publicPemWriter.close();
-		PemWriter privatePemWriter;
-		try {
-			privatePemWriter = new PemWriter(new BufferedWriter(new OutputStreamWriter(new FileOutputStream(getPrivateKeyFile()), "UTF-8")));
-		} catch (UnsupportedEncodingException e) {
-			privatePemWriter = new PemWriter(new BufferedWriter(new FileWriter(getPrivateKeyFile())));
-		}
+		PemWriter privatePemWriter = new PemWriter(new BufferedWriter(new FileWriter(getPrivateKeyFile())));
 		privatePemWriter.writeObject(new PemObject("RSA PRIVATE KEY", getKeyPair().getPrivate().getEncoded()));
 		privatePemWriter.flush();
 		privatePemWriter.close();

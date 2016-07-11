@@ -17,9 +17,8 @@
 
 package mamo.vanillaVotifier.event.server;
 
-import mamo.vanillaVotifier.Vote;
-
 import java.net.Socket;
+import mamo.vanillaVotifier.Vote;
 
 public class VoteEvent implements RequestEvent {
 	private final Socket socket;

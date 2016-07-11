@@ -23,7 +23,6 @@ import java.net.InetSocketAddress;
 import java.security.KeyPair;
 import java.security.spec.InvalidKeySpecException;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 public interface Config {
 	void load() throws IOException, InvalidKeySpecException;
@@ -59,61 +58,4 @@ public interface Config {
 	void save() throws IOException;
 
 	List<RconConfig> getRconConfigs();
-
-	public static interface RconConfig {
-
-		InetSocketAddress getInetSocketAddress();
-
-		void setInetSocketAddress(InetSocketAddress inetSocketAddress);
-
-		String getPassword();
-
-		void setPassword(String password);
-
-		List<String> getCommands();
-	}
-
-	public static class VanillaVotifierRconConfig implements RconConfig {
-
-		private InetSocketAddress inetSocketAddress;
-		private String password;
-		private CopyOnWriteArrayList<String> commands;
-
-		{
-			commands = new CopyOnWriteArrayList<String>();
-		}
-
-		public VanillaVotifierRconConfig(InetSocketAddress inetSocketAddress, String password) {
-			this.inetSocketAddress = inetSocketAddress;
-			this.password = password;
-		}
-
-		@Override
-		public synchronized InetSocketAddress getInetSocketAddress() {
-			return inetSocketAddress;
-		}
-
-		@Override
-		public synchronized void setInetSocketAddress(InetSocketAddress inetSocketAddress) {
-			if (inetSocketAddress == null) {
-				inetSocketAddress = new InetSocketAddress("127.0.0.1", 8192);
-			}
-			this.inetSocketAddress = inetSocketAddress;
-		}
-
-		@Override
-		public synchronized String getPassword() {
-			return password;
-		}
-
-		@Override
-		public synchronized void setPassword(String password) {
-			this.password = password;
-		}
-
-		@Override
-		public List<String> getCommands() {
-			return commands;
-		}
-	}
 }

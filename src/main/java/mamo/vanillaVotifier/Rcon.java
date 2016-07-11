@@ -17,106 +17,92 @@
 
 package mamo.vanillaVotifier;
 
-import mamo.vanillaVotifier.Config.RconConfig;
-
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.net.Socket;
+import java.net.SocketOptions;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.security.SecureRandom;
 
-public interface Rcon {
-	RconConfig getRconConfig();
+public class Rcon {
+	private final RconConfig rconConfig;
 
-	int getRequestId();
+	private Socket socket;
+	private int requestId;
 
-	void connect() throws IOException;
-
-	boolean isConnected();
-
-	Packet logIn() throws UnsupportedEncodingException, IOException;
-
-	Packet sendRequest(Packet request) throws UnsupportedEncodingException, IOException;
-
-	public static interface Packet {
-		int getLength();
-
-		int getRequestId();
-
-		Type getType();
-
-		String getPayload();
-
-		public static enum Type {
-			COMMAND_RESPONSE(0), COMMAND(2), LOG_IN(3);
-
-			private int i;
-
-			private Type(int i) {
-				this.i = i;
-			}
-
-			public int toInt() {
-				return i;
-			}
-
-			public static Type fromInt(int i) {
-				if (i == 0) {
-					return COMMAND_RESPONSE;
-				} else if (i == 2) {
-					return COMMAND;
-				} else if (i == 3) {
-					return LOG_IN;
-				} else {
-					throw new IllegalArgumentException("i has to be equal to 0, 2, or 3!");
-				}
+	public Rcon(RconConfig rconConfig) {
+		if (rconConfig == null) {
+			throw new IllegalArgumentException("rconConfig can't be null!");
+		}
+		this.rconConfig = rconConfig;
+		SecureRandom random = new SecureRandom();
+		while (true) {
+			requestId = random.nextInt();
+			if (requestId != -1) {
+				break;
 			}
 		}
 	}
 
-	public static class VanillaVotifierPacket implements Packet {
-		private int length;
-		private int requestId;
-		private Type type;
-		private String payload;
+	public RconConfig getRconConfig() {
+		return rconConfig;
+	}
 
-		public VanillaVotifierPacket(int requestId, Type type, String payload) {
-			this(Integer.SIZE / 8 + Integer.SIZE / 8 + payload.length() + Byte.SIZE / 8 * 2, requestId, type, payload);
-		}
+	public int getRequestId() {
+		return requestId;
+	}
 
-		public VanillaVotifierPacket(int length, int requestId, Type type, String payload) {
-			if (type == null) {
-				throw new IllegalArgumentException("type can't be null!");
+	public synchronized void connect() throws IOException {
+		socket = new Socket(rconConfig.getInetSocketAddress().getAddress(), rconConfig.getInetSocketAddress().getPort());
+		socket.setSoTimeout(SocketOptions.SO_TIMEOUT);
+	}
+
+	public synchronized boolean isConnected() {
+		if (socket != null) {
+			try {
+				sendRequest(new VotifierPacket(requestId, VotifierPacket.Type.COMMAND, null));
+				return true;
+			} catch (Exception e) {
+				// IOException
 			}
-			if (payload == null) {
-				payload = "";
-			}
-			this.length = length;
-			this.requestId = requestId;
-			this.type = type;
-			this.payload = payload;
 		}
+		return false;
+	}
 
-		@Override
-		public int getLength() {
-			return length;
-		}
+	public VotifierPacket logIn() throws IOException {
+		return sendRequest(new VotifierPacket(requestId, VotifierPacket.Type.LOG_IN, rconConfig.getPassword()));
+	}
 
-		@Override
-		public int getRequestId() {
-			return requestId;
+	public synchronized VotifierPacket sendRequest(VotifierPacket request) throws IOException {
+		if (socket == null) {
+			throw new IllegalStateException("RCon has yet to be connected!");
 		}
-
-		@Override
-		public Type getType() {
-			return type;
-		}
-
-		@Override
-		public String getPayload() {
-			return payload;
-		}
-
-		@Override
-		public String toString() {
-			return length + "\t" + requestId + "\t" + type.toInt() + "\t" + payload;
-		}
+		byte[] requestBytes = new byte[request.getLength() + Integer.SIZE / 8];
+		ByteBuffer requestBuffer = ByteBuffer.wrap(requestBytes);
+		requestBuffer.order(ByteOrder.LITTLE_ENDIAN);
+		requestBuffer.putInt(request.getLength());
+		requestBuffer.putInt(requestId);
+		requestBuffer.putInt(request.getType().toInt());
+		requestBuffer.put(request.getPayload().getBytes());
+		requestBuffer.put((byte) 0);
+		requestBuffer.put((byte) 0);
+		socket.getOutputStream().write(requestBytes);
+		socket.getOutputStream().flush();
+		byte[] responseBytes = new byte[Integer.SIZE / 8];
+		socket.getInputStream().read(responseBytes);
+		ByteBuffer responseBuffer = ByteBuffer.wrap(responseBytes);
+		responseBuffer.order(ByteOrder.LITTLE_ENDIAN);
+		int responseLength = responseBuffer.getInt();
+		responseBytes = new byte[responseLength];
+		socket.getInputStream().read(responseBytes);
+		responseBuffer = ByteBuffer.wrap(responseBytes);
+		responseBuffer.order(ByteOrder.LITTLE_ENDIAN);
+		int responseRequestId = responseBuffer.getInt();
+		VotifierPacket.Type responseType = VotifierPacket.Type.fromInt(responseBuffer.getInt());
+		byte[] responsePayload = new byte[responseLength - Integer.SIZE / 8 - Integer.SIZE / 8 - Byte.SIZE / 8 * 2];
+		responseBuffer.get(responsePayload);
+		responseBuffer.get();
+		responseBuffer.get();
+		return new VotifierPacket(responseLength, responseRequestId, responseType, new String(responsePayload));
 	}
 }

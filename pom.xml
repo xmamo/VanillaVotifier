@@ -20,7 +20,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>mamo</groupId>
 	<artifactId>VanillaVotifier</artifactId>
-	<version>3.5.0</version>
+	<version>4.0</version>
 	<dependencies>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
@@ -54,7 +54,7 @@
 			<resource>
 				<directory>src/main/resources</directory>
 				<includes>
-					<include>mamo/vanillaVotifier/impl/lang/info.txt</include>
+					<include>mamo/vanillaVotifier/lang/info.txt</include>
 				</includes>
 				<filtering>true</filtering>
 			</resource>
@@ -68,7 +68,7 @@
 					<archive>
 						<index>true</index>
 						<manifest>
-							<mainClass>mamo.vanillaVotifier.impl.VanillaVotifier</mainClass>
+							<mainClass>mamo.vanillaVotifier.VanillaVotifier</mainClass>
 						</manifest>
 						<manifestEntries>
 							<Built-By>Matteo Morena</Built-By>
@@ -99,7 +99,7 @@
 							</filters>
 							<transformers>
 								<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-									<mainClass>mamo.vanillaVotifier.impl.VanillaVotifier</mainClass>
+									<mainClass>mamo.vanillaVotifier.VanillaVotifier</mainClass>
 								</transformer>
 							</transformers>
 						</configuration>

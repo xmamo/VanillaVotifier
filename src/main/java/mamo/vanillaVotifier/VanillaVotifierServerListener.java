@@ -15,21 +15,34 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package mamo.vanillaVotifier.impl;
-
-import mamo.vanillaVotifier.Listener;
-import mamo.vanillaVotifier.Votifier;
-import mamo.vanillaVotifier.event.Event;
-import mamo.vanillaVotifier.event.ExceptionEvent;
-import mamo.vanillaVotifier.event.server.*;
-import mamo.vanillaVotifier.exception.InvalidRconPasswordException;
+package mamo.vanillaVotifier;
 
 import java.net.ConnectException;
 import java.util.AbstractMap.SimpleEntry;
+import mamo.vanillaVotifier.event.Event;
+import mamo.vanillaVotifier.event.ExceptionEvent;
+import mamo.vanillaVotifier.event.server.ComunicationExceptionEvent;
+import mamo.vanillaVotifier.event.server.ConnectionCloseExceptionEvent;
+import mamo.vanillaVotifier.event.server.ConnectionClosedEvent;
+import mamo.vanillaVotifier.event.server.ConnectionEstablishExceptionEvent;
+import mamo.vanillaVotifier.event.server.ConnectionEstablishedEvent;
+import mamo.vanillaVotifier.event.server.ConnectionInputStreamCloseExceptionEvent;
+import mamo.vanillaVotifier.event.server.DecryptInputExceptionEvent;
+import mamo.vanillaVotifier.event.server.InvalidRequestEvent;
+import mamo.vanillaVotifier.event.server.RconCommandResponseEvent;
+import mamo.vanillaVotifier.event.server.RconExceptionEvent;
+import mamo.vanillaVotifier.event.server.SendingRconCommandEvent;
+import mamo.vanillaVotifier.event.server.ServerAwaitingTaskCompletionEvent;
+import mamo.vanillaVotifier.event.server.ServerStartedEvent;
+import mamo.vanillaVotifier.event.server.ServerStartingEvent;
+import mamo.vanillaVotifier.event.server.ServerStoppedEvent;
+import mamo.vanillaVotifier.event.server.ServerStoppingEvent;
+import mamo.vanillaVotifier.event.server.VoteEvent;
+import mamo.vanillaVotifier.exception.InvalidRconPasswordException;
 
 public class VanillaVotifierServerListener implements Listener {
 	@Override
-	public void onEvent(Event event, Votifier votifier) {
+	public void onEvent(Event event, VanillaVotifier votifier) {
 		if (event instanceof ServerStartingEvent) {
 			votifier.getLogger().printlnTranslation("s1");
 		} else if (event instanceof ServerStartedEvent) {
@@ -47,7 +60,8 @@ public class VanillaVotifierServerListener implements Listener {
 					new SimpleEntry<String, Object>("service-name", voteEvent.getVote().getServiceName()),
 					new SimpleEntry<String, Object>("user-name", voteEvent.getVote().getUserName()),
 					new SimpleEntry<String, Object>("address", voteEvent.getVote().getAddress()),
-					new SimpleEntry<String, Object>("time-stamp", voteEvent.getVote().getTimeStamp()));
+					new SimpleEntry<String, Object>("time-stamp", voteEvent.getVote().getTimeStamp()),
+					new SimpleEntry<String, Object>("empty", voteEvent.getVote() instanceof Vote ? ((Vote) voteEvent.getVote()).getEmpty() : null));
 		} else if (event instanceof SendingRconCommandEvent) {
 			SendingRconCommandEvent sendingRconCommandEvent = (SendingRconCommandEvent) event;
 			votifier.getLogger().printlnTranslation("s5",
@@ -75,7 +89,7 @@ public class VanillaVotifierServerListener implements Listener {
 			votifier.getLogger().printlnTranslation("s8",
 					new SimpleEntry<String, Object>("ip", invalidRequestEvent.getSocket().getInetAddress().getHostAddress()),
 					new SimpleEntry<String, Object>("port", invalidRequestEvent.getSocket().getPort()),
-					new SimpleEntry<String, Object>("message", invalidRequestEvent.getMessage().replaceAll("\n", "\t")));
+					new SimpleEntry<String, Object>("message", invalidRequestEvent.getMessage().replaceAll("\n", "---")));
 		} else if (event instanceof ConnectionInputStreamCloseExceptionEvent) {
 			ConnectionInputStreamCloseExceptionEvent socketInputStreamCloseException = (ConnectionInputStreamCloseExceptionEvent) event;
 			votifier.getLogger().printlnTranslation("s9",

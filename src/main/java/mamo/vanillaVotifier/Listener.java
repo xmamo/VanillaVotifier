@@ -20,5 +20,5 @@ package mamo.vanillaVotifier;
 import mamo.vanillaVotifier.event.Event;
 
 public interface Listener {
-	void onEvent(Event event, Votifier votifier);
+	void onEvent(Event event, VanillaVotifier votifier);
 }
