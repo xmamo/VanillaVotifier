@@ -31,9 +31,15 @@ public interface Config {
 
 	int getConfigVersion();
 
+	@Deprecated
 	File getLogFile();
 
+	@Deprecated
 	void setLogFile(File location);
+
+	File getLogDirectory();
+
+	void setLogDirectory(File location);
 
 	InetSocketAddress getInetSocketAddress();
 
