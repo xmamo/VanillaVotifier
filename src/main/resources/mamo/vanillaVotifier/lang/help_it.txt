@@ -1,17 +1,9 @@
-============================== COMANDI DISPONIBILI =============================
-gen-key-pair [key-size] Genera una nuova coppia di chiavi per il server di
-                        VanillaVotifier. La dimensione della chiave, key-size,
-                        ha come valore predefinito 2048.
-help                    Mostra tutti i comandi disponibili.
-info                    Mostra informazioni su VanillaVotifier.
-license                 Mostra la licenza di VanillaVotifier (disponibile solo
-                        in inglese).
-manual                  Visualizza un manuale dettagliato di VanillaVotifier
-                        (disponibile solo in inglese).
-restart                 Riavvia il server di VanillaVotifier.
-stop                    Arresta il server di VanillaVotifier.
-test-query <query>      Invia una query cifrata al server di VanillaVotifier
-                        stesso. Da usare solo a scopo di debug.
-test-vote <IGN>         Emula l'invio di un voto da parte di IGN a
-                        VanillaVotifier stesso. Da usare solo a scopo di debug.
-================================================================================
+help                  Visualizza tutti i comandi disponibili.
+info                  Visualizza informazioni riguardanti VanillaVotifier.
+stop                  Arresta il server di VanillaVotifier.
+restart               Riavvia il server di VanillaVotifier.
+genkeypair [key-size] Genera una nuova coppia di chiavi per VanillaVotifier.
+                      key-size valore predefinito 2048.
+showkey <(pub|priv)>  Visualizza la chiave pubblica/privata corrente.
+testquery <query>     Invia una query cifrata al server di VanillaVotifier.
+testvote <IGN>        Emula l'invio di un voto da parte di IGN al server.

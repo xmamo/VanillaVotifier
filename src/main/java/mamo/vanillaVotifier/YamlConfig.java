@@ -17,95 +17,77 @@
 
 package mamo.vanillaVotifier;
 
-import java.io.File;
-import java.io.IOException;
+import mamo.vanillaVotifier.utils.TimestampUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.yaml.snakeyaml.Yaml;
+
+import java.io.*;
 import java.net.InetSocketAddress;
-import java.security.KeyPair;
 import java.security.spec.InvalidKeySpecException;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
-public class YamlConfig implements Config {
-	private final File configFile;
+public class YamlConfig extends AbstractConfig {
+	@SuppressWarnings("deprecation") @Nullable protected JsonConfig jsonConfig;
+	@Nullable protected Map<String, Object> yamlConfig;
 
-	private boolean loaded;
-	private int configVersion;
-	private File logFile;
-	private InetSocketAddress inetSocketAddress;
-	private File publicKeyFile;
-	private File privateKeyFile;
-	private KeyPair keyPair;
-	private ArrayList<RconConfig> rconConfigs;
-
-	public YamlConfig(File configFile) {
-		this.configFile = configFile;
+	public YamlConfig(@NotNull File configFile) {
+		this(configFile, null);
 	}
 
-	@Override public void load() throws IOException, InvalidKeySpecException {
-
+	public YamlConfig(@NotNull File configFile, @SuppressWarnings("deprecation") @Nullable JsonConfig jsonConfig) {
+		super(configFile);
+		this.jsonConfig = jsonConfig;
 	}
 
-	@Override public boolean isLoaded() {
-		return false;
+	@Override
+	public void load() throws IOException, InvalidKeySpecException {
+		loadFromConfigFile();
+		if (jsonConfig != null) {
+			loadFromOldJsonConfig();
+		}
 	}
 
-	@Override public int getConfigVersion() {
-		return 0;
+	protected void loadFromOldJsonConfig() {
+		inetSocketAddress = jsonConfig.getInetSocketAddress();
+		keyPair = jsonConfig.getKeyPair();
+		voteActions.clear();
+		voteActions.addAll(jsonConfig.getVoteActions());
 	}
 
-	@Override public File getLogFile() {
-		return null;
+	protected void loadFromConfigFile() throws IOException, InvalidKeySpecException {
+		if (!configFile.exists()) {
+			copyDefaultConfig(YamlConfig.class.getResourceAsStream("config.yaml"));
+		}
+		yamlConfig = (Map<String, Object>) new Yaml().load(new BufferedReader(new FileReader(configFile)));
+		configVersion = (Integer) yamlConfig.get("config-version");
+		logDirectory = new File((String) yamlConfig.get("log-directory"));
+		if (!logDirectory.exists()) {
+			logDirectory.mkdirs();
+		}
+		logFile = new File(logDirectory, TimestampUtils.getTimestamp() + ".log");
+		inetSocketAddress = new InetSocketAddress((String) ((Map) yamlConfig.get("server")).get("ip"), (Integer) ((Map) yamlConfig.get("server")).get("port"));
+		publicKeyFile = new File((String) ((Map) yamlConfig.get("key-pair-files")).get("public"));
+		privateKeyFile = new File((String) ((Map) yamlConfig.get("key-pair-files")).get("private"));
+		loadKeyPair();
+		voteActions.clear();
+		for (Map<String, Object> commandSenderConfig : (List<Map<String, Object>>) yamlConfig.get("on-vote")) {
+			if (((String) commandSenderConfig.get("action")).equalsIgnoreCase("rcon")) {
+				Map<String, Object> server = (Map<String, Object>) commandSenderConfig.get("server");
+				voteActions.add(new VoteAction(new RconCommandSender(new RconConnection(new InetSocketAddress((String) server.get("ip"), (Integer) server.get("port")), (String) server.get("password"))), (List<String>) commandSenderConfig.get("commands")));
+			} else if (((String) commandSenderConfig.get("action")).equalsIgnoreCase("shell")) {
+				voteActions.add(new VoteAction(new ShellCommandSender(), (List<String>) commandSenderConfig.get("commands")));
+			}
+		}
 	}
 
-	@Override public void setLogFile(File location) {
-
-	}
-
-	@Override public InetSocketAddress getInetSocketAddress() {
-		return null;
-	}
-
-	@Override public void setInetSocketAddress(InetSocketAddress inetSocketAddress) {
-
-	}
-
-	@Override public File getPublicKeyFile() {
-		return null;
-	}
-
-	@Override public void setPublicKeyFile(File location) {
-
-	}
-
-	@Override public File getPrivateKeyFile() {
-		return null;
-	}
-
-	@Override public void setPrivateKeyFile(File location) {
-
-	}
-
-	@Override public KeyPair getKeyPair() {
-		return null;
-	}
-
-	@Override public void setKeyPair(KeyPair keyPair) {
-
-	}
-
-	@Override public void genKeyPair() {
-
-	}
-
-	@Override public void genKeyPair(int keySize) {
-
-	}
-
-	@Override public void save() throws IOException {
-
-	}
-
-	@Override public List<RconConfig> getRconConfigs() {
-		return null;
+	@Override
+	public void save() throws IOException {
+		BufferedWriter out = new BufferedWriter(new FileWriter(configFile));
+		new Yaml().dump(yamlConfig, out);
+		out.flush();
+		out.close();
+		saveKeyPair();
 	}
 }

@@ -17,6 +17,9 @@
 
 package mamo.vanillaVotifier;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -27,41 +30,46 @@ import java.util.List;
 public interface Config {
 	void load() throws IOException, InvalidKeySpecException;
 
-	boolean isLoaded();
-
 	int getConfigVersion();
 
-	@Deprecated
+	@Nullable
 	File getLogFile();
 
-	@Deprecated
-	void setLogFile(File location);
+	void setLogFile(@NotNull File location);
 
+	@Nullable
 	File getLogDirectory();
 
-	void setLogDirectory(File location);
+	void setLogDirectory(@NotNull File location);
 
+	@Nullable
 	InetSocketAddress getInetSocketAddress();
 
-	void setInetSocketAddress(InetSocketAddress inetSocketAddress);
+	void setInetSocketAddress(@NotNull InetSocketAddress inetSocketAddress);
 
+	@Nullable
 	File getPublicKeyFile();
 
-	void setPublicKeyFile(File location);
+	void setPublicKeyFile(@NotNull File location);
 
+	@Nullable
 	File getPrivateKeyFile();
 
-	void setPrivateKeyFile(File location);
+	void setPrivateKeyFile(@NotNull File location);
 
+	@Nullable
 	KeyPair getKeyPair();
 
-	void setKeyPair(KeyPair keyPair);
+	void setKeyPair(@NotNull KeyPair keyPair);
 
-	void genKeyPair();
+	void generateKeyPair();
 
-	void genKeyPair(int keySize);
+	void generateKeyPair(int keySize);
+
+	void saveKeyPair() throws IOException;
+
+	@NotNull
+	List<VoteAction> getVoteActions();
 
 	void save() throws IOException;
-
-	List<RconConfig> getRconConfigs();
 }

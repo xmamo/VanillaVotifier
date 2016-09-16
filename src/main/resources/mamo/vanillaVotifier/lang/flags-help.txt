@@ -1,5 +1,0 @@
-=============================== AVAIABLE OPTIONS ===============================
--help              Displays all available options.
--report-exceptions Reports all exceptions, in addition to the human readable
-                   error messages.
-================================================================================

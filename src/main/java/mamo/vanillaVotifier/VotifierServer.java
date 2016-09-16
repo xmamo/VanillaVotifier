@@ -17,60 +17,41 @@
 
 package mamo.vanillaVotifier;
 
+import mamo.vanillaVotifier.event.*;
+import mamo.vanillaVotifier.utils.RsaUtils;
+import mamo.vanillaVotifier.utils.SubstitutionUtils;
+import org.apache.commons.lang3.text.StrSubstitutor;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import javax.crypto.BadPaddingException;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketOptions;
-import java.security.GeneralSecurityException;
 import java.security.interfaces.RSAPublicKey;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import javax.crypto.BadPaddingException;
-import mamo.vanillaVotifier.event.Event;
-import mamo.vanillaVotifier.event.server.ComunicationExceptionEvent;
-import mamo.vanillaVotifier.event.server.ConnectionCloseExceptionEvent;
-import mamo.vanillaVotifier.event.server.ConnectionClosedEvent;
-import mamo.vanillaVotifier.event.server.ConnectionEstablishExceptionEvent;
-import mamo.vanillaVotifier.event.server.ConnectionEstablishedEvent;
-import mamo.vanillaVotifier.event.server.ConnectionInputStreamCloseExceptionEvent;
-import mamo.vanillaVotifier.event.server.DecryptInputExceptionEvent;
-import mamo.vanillaVotifier.event.server.DecryptedInputReceivedEvent;
-import mamo.vanillaVotifier.event.server.EncryptedInputReceivedEvent;
-import mamo.vanillaVotifier.event.server.InvalidRequestEvent;
-import mamo.vanillaVotifier.event.server.RconCommandResponseEvent;
-import mamo.vanillaVotifier.event.server.RconExceptionEvent;
-import mamo.vanillaVotifier.event.server.SendingRconCommandEvent;
-import mamo.vanillaVotifier.event.server.ServerAwaitingTaskCompletionEvent;
-import mamo.vanillaVotifier.event.server.ServerStartedEvent;
-import mamo.vanillaVotifier.event.server.ServerStartingEvent;
-import mamo.vanillaVotifier.event.server.ServerStoppedEvent;
-import mamo.vanillaVotifier.event.server.ServerStoppingEvent;
-import mamo.vanillaVotifier.event.server.VoteEvent;
-import mamo.vanillaVotifier.util.RsaUtils;
-import org.apache.commons.lang3.text.StrSubstitutor;
 
 public class VotifierServer {
-	private final VanillaVotifier votifier;
-	private final CopyOnWriteArrayList<Listener> listeners;
+	@NotNull protected VanillaVotifier votifier;
+	@NotNull protected CopyOnWriteArrayList<Listener> listeners;
+	protected boolean running;
+	@Nullable protected ServerSocket serverSocket;
 
-	private boolean running;
-	private ServerSocket serverSocket;
-
-	{
-		listeners = new CopyOnWriteArrayList<Listener>();
-		getListeners().add(new VanillaVotifierServerListener());
-	}
-
-	public VotifierServer(VanillaVotifier votifier) {
+	public VotifierServer(@NotNull VanillaVotifier votifier) {
 		this.votifier = votifier;
+		listeners = new CopyOnWriteArrayList<Listener>();
+		listeners.add(new VotifierServerListener(votifier));
 	}
 
-	public synchronized void start() throws IOException, GeneralSecurityException {
+	public synchronized void start() throws IOException {
 		if (isRunning()) {
 			throw new IllegalStateException("Server is already running!");
 		}
@@ -101,21 +82,41 @@ public class VotifierServer {
 									notifyListeners(new DecryptedInputReceivedEvent(socket, requestString));
 									String[] requestArray = requestString.split("\n");
 									if ((requestArray.length == 5 || requestArray.length == 6) && requestArray[0].equals("VOTE")) {
-										notifyListeners(new VoteEvent(socket, new Vote(requestArray[1], requestArray[2], requestArray[3], requestArray[4], requestArray.length == 6 ? requestArray[5] : null)));
-										HashMap<String, String> substitutions = new HashMap<String, String>();
-										substitutions.put("service-name", requestArray[1]);
-										substitutions.put("user-name", requestArray[2]);
-										substitutions.put("address", requestArray[3]);
-										substitutions.put("time-stamp", requestArray[4]);
-										StrSubstitutor substitutor = new StrSubstitutor(substitutions);
-										for (Rcon rcon : votifier.getRcons()) {
-											for (String command : rcon.getRconConfig().getCommands()) {
-												command = substitutor.replace(command);
-												notifyListeners(new SendingRconCommandEvent(rcon, command));
-												try {
-													notifyListeners(new RconCommandResponseEvent(rcon, votifier.getCommandSender().sendCommand(rcon, command)));
-												} catch (Exception e) {
-													notifyListeners(new RconExceptionEvent(rcon, e));
+										notifyListeners(new VoteEventVotifier(socket, new Vote(requestArray[1], requestArray[2], requestArray[3], requestArray[4])));
+										SimpleEntry<String, Object>[] substitutions = new SimpleEntry[4];
+										substitutions[0] = new SimpleEntry<String, Object>("service-name", requestArray[1]);
+										substitutions[1] = new SimpleEntry<String, Object>("user-name", requestArray[2]);
+										substitutions[2] = new SimpleEntry<String, Object>("address", requestArray[3]);
+										substitutions[3] = new SimpleEntry<String, Object>("timestamp", requestArray[4]);
+										StrSubstitutor substitutor = SubstitutionUtils.buildStrSubstitutor(substitutions);
+										HashMap<String, String> environment = new HashMap<String, String>();
+										environment.put("voteServiceName", requestArray[1]);
+										environment.put("voteUserName", requestArray[2]);
+										environment.put("voteAddress", requestArray[3]);
+										environment.put("voteTimestamp", requestArray[4]);
+										for (VoteAction voteAction : votifier.getConfig().getVoteActions()) {
+											if (voteAction.getCommandSender() instanceof RconCommandSender) {
+												RconCommandSender commandSender = (RconCommandSender) voteAction.getCommandSender();
+												for (String command : voteAction.getCommands()) {
+													String theCommand = substitutor.replace(command);
+													notifyListeners(new SendingRconCommandEvent(commandSender.getRconConnection(), theCommand));
+													try {
+														notifyListeners(new RconCommandResponseEvent(commandSender.getRconConnection(), commandSender.sendCommand(theCommand).getPayload()));
+													} catch (Exception e) {
+														notifyListeners(new RconExceptionEvent(commandSender.getRconConnection(), e));
+													}
+												}
+											}
+											if (voteAction.getCommandSender() instanceof ShellCommandSender) {
+												ShellCommandSender commandSender = (ShellCommandSender) voteAction.getCommandSender();
+												for (String command : voteAction.getCommands()) {
+													notifyListeners(new SendingShellCommandEvent(command));
+													try {
+														commandSender.sendCommand(command, environment);
+														notifyListeners(new ShellCommandSentEvent());
+													} catch (Exception e) {
+														notifyListeners(new ShellCommandExceptionEvent(e));
+													}
 												}
 											}
 										}
@@ -130,7 +131,7 @@ public class VotifierServer {
 								} catch (BadPaddingException e) {
 									notifyListeners(new DecryptInputExceptionEvent(socket, e));
 								} catch (Exception e) {
-									notifyListeners(new ComunicationExceptionEvent(socket, e));
+									notifyListeners(new CommunicationExceptionEvent(socket, e));
 								}
 								try {
 									socket.close();
@@ -173,13 +174,14 @@ public class VotifierServer {
 		return running;
 	}
 
+	@NotNull
 	public List<Listener> getListeners() {
 		return listeners;
 	}
 
-	public void notifyListeners(Event event) {
+	public void notifyListeners(@NotNull Event event) {
 		for (Listener listener : listeners) {
-			listener.onEvent(event, votifier);
+			listener.onEvent(event);
 		}
 	}
 }

@@ -3,37 +3,44 @@ config-version: 4
 
 # The relatoive path to the directory in which to save the log files.
 # If the directory doesn't exist, it will be created.
-log-directory: "logs"
+log-directory: 'logs'
 
 # The IP address and port of the VanillaVotifier server.
 server:
- ip: "127.0.0.1"
- port: 8192
+  ip: '127.0.0.1'
+  port: 8192
 
 # The relative path to the public and private key files.
-# If one or both of the files don't exist, a new 2048-bit key pair will be generated.
+# If both files don't exist, a new 2048-bit key pair will be generated.
 key-pair-files:
- public: "public.pem"
- private: "private.pem"
+  public: 'public.pem'
+  private: 'private.pem'
 
-# A list of RCon servers to connect to as soon as somebody votes for your server.
-rcon-list:
- -
-  # The IP address, port, and password of the RCon server.
-  # Using a local IP address should be preferred, since the RCon protocol requires passwords to be sent as plaintext.
-  rcon-server:
-   ip: "127.0.0.1"
-   port: 25575
-   password: "password"
+# A list of actions to perform as soon as somebody votes for your server.
+on-vote:
+  # Sends one or more commands to a Minecraft RCon server.
+  - action: 'rcon'
+    # The IP address, port, and password of the RCon server.
+    # Using a local IP address should be preferred, since the RCon protocol requires passwords to be sent as plaintext.
+    server:
+      ip: '127.0.0.1'
+      port: 25575
+      password: 'password'
 
-  # The commands to send to the RCon server.
-  # "${service-name}" will be replaced with the service the player has voted on (for example MCSL).
-  # "${user-name}" will be replaced with the IGN of the player.
-  # "${address}" will be replaced with the player's IP address.
-  # "${time-stamp}" will be replaced with the time stamp in which the player has voted. Format may vary depending on voting service.
-  #
-  # It is not recommended to use commands such as "/give", "/effect", etc., since they wouldn't work if the player is offline.
-  # Instead, set a certain score (since "/scoreboard players set" commands always work) and handle rewarding through an ingame and always loaded Command Block clock.
-  commands:
-   - "tellraw @a {\"text\":\"${user-name} has just voted for this server on ${service-name}. Thanks!\",\"color\":\"yellow\"}"
-   - "scoreboard players add ${user-name} voted 1"
+    # The commands to send to the RCon server.
+    # "${service-name}" will be replaced with the service the player has voted on (for example MCSL).
+    # "${user-name}" will be replaced with the IGN of the player.
+    # "${address}" will be replaced with the player's IP address.
+    # "${timestamp}" will be replaced with the time stamp in which the player has voted. Format may vary depending on voting service.
+    #
+    # It is not recommended to use commands such as "/give", "/effect", etc., since they wouldn't work if the player is offline.
+    # Instead, set a certain score (since "/scoreboard players set" commands always work) and handle rewarding through an ingame Command Block clock which is always loaded.
+    commands:
+      - 'tellraw @a {"text":"${user-name} has just voted for this server on ${service-name}. Thanks!","color":"yellow"}'
+      - 'scoreboard players add ${user-name} voted 1'
+
+  # Executes one or more commands through the system shell.
+  # Environment will setup the following variables: "voteServiceName", "voteUserName", "voteAddress", "voteTimestamp".
+  - action: 'shell'
+    commands:
+      - 'test -x onvote.sh && ./onvote.sh' # "CMD /C IF EXIST onvote.bat onvote.bat" on Windows.

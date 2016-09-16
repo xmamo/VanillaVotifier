@@ -17,26 +17,30 @@
 
 package mamo.vanillaVotifier;
 
+import mamo.vanillaVotifier.utils.SubstitutionUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.ResourceBundle;
-import org.apache.commons.lang3.text.StrSubstitutor;
 
 public class LanguagePack {
-	private final ResourceBundle bundle;
+	@NotNull protected String languagePackPath;
+	@NotNull protected ResourceBundle bundle;
 
-	public LanguagePack(String languagePackName) {
-		bundle = ResourceBundle.getBundle(languagePackName);
+	public LanguagePack(@NotNull String languagePackPath, @NotNull String languagePackName) {
+		if (languagePackPath.endsWith("/")) {
+			languagePackPath = languagePackPath.substring(0, languagePackPath.length() - 1);
+		}
+		this.languagePackPath = languagePackPath;
+		bundle = ResourceBundle.getBundle(languagePackPath + "/" + languagePackName);
 	}
 
-	public String getString(String key) {
-		return getString(key, new Entry[]{});
-	}
-
-	public String getString(String key, Entry<String, Object>... substitutions) {
+	@Nullable
+	public String getString(@NotNull String key, @Nullable Entry<String, Object>... substitutions) {
 		String string = null;
 		if (bundle.containsKey(key)) {
 			string = bundle.getString(key).replaceAll("\\u000D\\u000A|[\\u000A\\u000B\\u000C\\u000D\\u0085\\u2028\\u2029]", System.getProperty("line.separator"));
@@ -46,7 +50,7 @@ public class LanguagePack {
 				return null;
 			}
 			if (!resource.startsWith("/")) {
-				resource = "/mamo/vanillaVotifier/lang/" + resource;
+				resource = languagePackPath + "/" + resource;
 			}
 			BufferedReader in = new BufferedReader(new InputStreamReader(LanguagePack.class.getResourceAsStream(resource)));
 			StringBuilder stringBuilder = new StringBuilder();
@@ -61,22 +65,10 @@ public class LanguagePack {
 			}
 			string = stringBuilder.toString().replaceAll("\\u000D\\u000A|[\\u000A\\u000B\\u000C\\u000D\\u0085\\u2028\\u2029]", System.getProperty("line.separator"));
 		}
-		if (substitutions == null || string == null) {
+		if (string == null) {
 			return string;
 		} else {
-			HashMap<String, Object> substitutionsMap = new HashMap<String, Object>();
-			for (Entry<String, Object> substitution : substitutions) {
-				if (substitution.getValue() != null) {
-					if (!(substitution.getValue() instanceof Throwable)) {
-						substitutionsMap.put(substitution.getKey(), substitution.getValue());
-					} else {
-						substitutionsMap.put(substitution.getKey(), ((Throwable) substitution.getValue()).toString());
-					}
-				} else {
-					substitutionsMap.put(substitution.getKey(), "");
-				}
-			}
-			return new StrSubstitutor(substitutionsMap).replace(string);
+			return SubstitutionUtils.buildStrSubstitutor(substitutions).replace(string);
 		}
 	}
 }
