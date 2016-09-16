@@ -17,6 +17,9 @@
 
 package mamo.vanillaVotifier.event;
 
+import org.jetbrains.annotations.NotNull;
+
 public interface ExceptionEvent extends Event {
+	@NotNull
 	Exception getException();
 }

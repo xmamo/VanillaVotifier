@@ -17,30 +17,33 @@
 
 package mamo.vanillaVotifier;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.io.BufferedWriter;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.util.Map.Entry;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 
 public class Logger {
-	private final VanillaVotifier votifier;
-	private final StringBuffer buffer;
-
+	@NotNull protected VanillaVotifier votifier;
+	@NotNull protected StringBuffer buffer = new StringBuffer();
 	private BufferedWriter logWriter;
 
-	{
-		buffer = new StringBuffer();
-	}
-
-	public Logger(VanillaVotifier votifier) {
+	public Logger(@NotNull VanillaVotifier votifier) {
 		this.votifier = votifier;
 	}
 
-	public void print(Object object) {
+	public void print(@Nullable Object object) {
 		String string = toString(object);
-		synchronized (System.out) {
-			System.out.print(string);
+		synchronized (votifier.getWriter()) {
+			try {
+				votifier.getWriter().write(string);
+				votifier.getWriter().flush();
+			} catch (Exception e) { // IOException
+				// Can't happen.
+			}
 		}
 		initWriterIfVotifierIsLoaded();
 		if (logWriter != null) {
@@ -48,49 +51,43 @@ public class Logger {
 				buffer.append(string);
 				try {
 					logWriter.write(buffer.toString());
+					buffer.setLength(0);
 					logWriter.flush();
 				} catch (Exception e) {
 					// Ignoring.
 				}
-				buffer.setLength(0);
 			}
 		} else {
 			buffer.append(string);
 		}
 	}
 
-	public void println(Object object) {
+	public void println(@NotNull Object object) {
 		print(toString(object) + System.getProperty("line.separator"));
 	}
 
-	protected String toString(Object object) {
-		String string;
-		if (!(object instanceof Throwable)) {
-			string = object.toString();
-		} else {
-			string = ExceptionUtils.getStackTrace((Throwable) object);
+	@NotNull
+	public String toString(@Nullable Object object) {
+		if (object == null) {
+			return "";
 		}
-		return string;
+		if (!(object instanceof Throwable)) {
+			return object.toString();
+		} else {
+			return ExceptionUtils.getStackTrace((Throwable) object);
+		}
 	}
 
-	public void printTranslation(String key) {
-		printTranslation(key, new Entry[]{});
-	}
-
-	public void printTranslation(String key, Entry<String, Object>... substitutions) {
+	public void printTranslation(@NotNull String key, @Nullable Entry<String, Object>... substitutions) {
 		print(votifier.getLanguagePack().getString(key, substitutions));
 	}
 
-	public void printlnTranslation(String key) {
-		printlnTranslation(key, new Entry[]{});
-	}
-
-	public void printlnTranslation(String key, Entry<String, Object>... substitutions) {
+	public void printlnTranslation(@NotNull String key, @Nullable Entry<String, Object>... substitutions) {
 		println(votifier.getLanguagePack().getString(key, substitutions));
 	}
 
 	private void initWriterIfVotifierIsLoaded() {
-		if (logWriter == null && votifier.getConfig().isLoaded()) {
+		if (logWriter == null && votifier.getConfig().getLogFile() != null) {
 			try {
 				logWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(votifier.getConfig().getLogFile())));
 			} catch (Exception e) {

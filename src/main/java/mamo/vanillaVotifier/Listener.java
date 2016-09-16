@@ -18,7 +18,8 @@
 package mamo.vanillaVotifier;
 
 import mamo.vanillaVotifier.event.Event;
+import org.jetbrains.annotations.NotNull;
 
 public interface Listener {
-	void onEvent(Event event, VanillaVotifier votifier);
+	void onEvent(@NotNull Event event);
 }

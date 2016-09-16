@@ -17,14 +17,17 @@
 
 package mamo.vanillaVotifier.event;
 
-public abstract class AbstractExceptionEvent implements ExceptionEvent {
-	protected final Exception exception;
+import org.jetbrains.annotations.NotNull;
 
-	public AbstractExceptionEvent(Exception exception) {
+public abstract class AbstractExceptionEvent implements ExceptionEvent {
+	@NotNull protected Exception exception;
+
+	public AbstractExceptionEvent(@NotNull Exception exception) {
 		this.exception = exception;
 	}
 
 	@Override
+	@NotNull
 	public Exception getException() {
 		return exception;
 	}

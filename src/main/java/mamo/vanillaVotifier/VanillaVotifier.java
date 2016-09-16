@@ -17,129 +17,128 @@
 
 package mamo.vanillaVotifier;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.net.BindException;
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Scanner;
+import jline.console.ConsoleReader;
+import jline.console.UserInterruptException;
+import jline.console.completer.ArgumentCompleter;
+import jline.console.completer.ArgumentCompleter.WhitespaceArgumentDelimiter;
+import jline.console.completer.Completer;
+import jline.console.completer.StringsCompleter;
 import mamo.vanillaVotifier.event.Event;
-import mamo.vanillaVotifier.event.server.ServerStoppedEvent;
+import mamo.vanillaVotifier.event.ServerStoppedEvent;
 import mamo.vanillaVotifier.exception.InvalidPrivateKeyFileException;
 import mamo.vanillaVotifier.exception.InvalidPublicKeyFileException;
 import mamo.vanillaVotifier.exception.PrivateKeyFileNotFoundException;
 import mamo.vanillaVotifier.exception.PublicKeyFileNotFoundException;
+import mamo.vanillaVotifier.utils.RsaUtils;
+import mamo.vanillaVotifier.utils.TimestampUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.json.JSONException;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.Writer;
+import java.net.BindException;
+import java.util.AbstractMap.SimpleEntry;
+import java.util.List;
+
 public class VanillaVotifier {
-	private final LanguagePack languagePack;
-	private final Logger logger;
-	private final File configFile;
-	private final JsonConfig config;
-	private final CommandSender commandSender;
-	private final VotifierServer server;
-	private final ArrayList<Rcon> rcons;
-	private final VotifierTester tester;
+	@Nullable protected static Writer writer;
 
-	private boolean reportExceptions;
+	@NotNull protected LanguagePack languagePack = new LanguagePack("mamo/vanillaVotifier/lang", "lang");
+	@NotNull protected Logger logger = new Logger(this);
+	@NotNull protected File configFile = new File("config.yaml");
+	@NotNull protected YamlConfig config = new YamlConfig(configFile);
+	@NotNull protected VotifierServer server = new VotifierServer(this);
+	@NotNull protected Tester tester = new Tester(this);
 
-	{
-		languagePack = new LanguagePack("mamo/vanillaVotifier/lang/lang");
-		configFile = new File("config.json");
-		config = new JsonConfig(configFile);
-		logger = new Logger(this);
-		commandSender = new CommandSender();
-		server = new VotifierServer(this);
-		rcons = new ArrayList<Rcon>();
-		tester = new VotifierTester(this);
-	}
-
-	public VanillaVotifier() {
-		this(false);
-	}
-
-	public VanillaVotifier(boolean reportExceptions) {
-		this.reportExceptions = reportExceptions;
-	}
-
-	public static void main(String[] args) {
+	public static void main(@Nullable String[] arguments) throws IOException {
 		String[] javaVersion = System.getProperty("java.version").split("\\.");
 		if (!(javaVersion.length >= 1 && Integer.parseInt(javaVersion[0]) >= 1 && javaVersion.length >= 2 && Integer.parseInt(javaVersion[1]) >= 6)) {
 			System.out.println(("You need at least Java 1.6 to run this program! Current version: " + System.getProperty("java.version") + "."));
 			return;
 		}
 
-		VanillaVotifier votifier = new VanillaVotifier();
-		for (String arg : args) {
-			if (arg.equalsIgnoreCase("-report-exceptions")) {
-				votifier.reportExceptions = true;
-			} else if (arg.equalsIgnoreCase("-help")) {
-				votifier.getLogger().printlnTranslation("s58");
-				return;
-			} else {
-				votifier.getLogger().printlnTranslation("s55", new AbstractMap.SimpleEntry<String, Object>("option", arg));
-				return;
+		WhitespaceArgumentDelimiter delimiter = new WhitespaceArgumentDelimiter();
+		final ConsoleReader reader = new ConsoleReader();
+		writer = reader.getOutput();
+		reader.setExpandEvents(false);
+		reader.setHandleUserInterrupt(true);
+		reader.addCompleter(new StringsCompleter("help", "info", "stop", "restart", "genkeypair", "showkey", "testquery", "testvote"));
+		reader.addCompleter(new ArgumentCompleter(delimiter, new StringsCompleter("showkey"), new StringsCompleter("pub", "priv")));
+		reader.addCompleter(new ArgumentCompleter(delimiter, new StringsCompleter("testquery"), new StringsCompleter("VOTE"), new AnyCompleter(), new AnyCompleter(), new AnyCompleter(), new Completer() {
+			@Override
+			public int complete(String buffer, int cursor, List<CharSequence> candidates) {
+				return new StringsCompleter("'" + TimestampUtils.getTimestamp() + "'").complete(buffer, cursor, candidates);
 			}
-		}
-		votifier.getLogger().printlnTranslation("s42");
-		if (!(loadConfig(votifier) && startServer(votifier))) {
+		}));
+
+		final VanillaVotifier votifier = new VanillaVotifier();
+		if (!(votifier.loadConfig() && votifier.startServer())) {
 			return;
 		}
-		Scanner in = new Scanner(System.in);
 
 		while (true) {
-			String command;
+			String[] args;
 			try {
-				command = in.nextLine();
-			} catch (NoSuchElementException e) {
-				// NoSuchElementException: Can only happen at unexpected program interruption (i. e. CTRL+C). Ignoring.
-				continue;
-			} catch (Exception e) {
-				votifier.getLogger().printlnTranslation("s57", new AbstractMap.SimpleEntry<String, Object>("exception", e));
-				if (!stopServer(votifier)) {
-					System.exit(0); // "return" somehow isn't enough.
+				String command = reader.readLine();
+				args = delimiter.delimit(command, command.length()).getArguments();
+				if (args == null) {
+					args = new String[]{};
 				}
-				return;
+				for (int i = 0; i < args.length; i++) {
+					args[i] = StringEscapeUtils.unescapeJava(args[i]);
+				}
+			} catch (UserInterruptException e) {
+				votifier.stopServer();
+				break;
+			} catch (Exception e) {
+				votifier.getLogger().printlnTranslation("s57", new SimpleEntry<String, Object>("exception", e));
+				votifier.stopServer();
+				break;
 			}
-			if (command.equalsIgnoreCase("stop") || command.toLowerCase().startsWith("stop ")) {
-				if (command.split(" ").length == 1) {
-					stopServer(votifier);
+			if (args.length == 0) {
+				continue;
+			}
+			if (args[0].equals("stop")) {
+				if (args.length == 1) {
+					votifier.stopServer();
 					break;
 				} else {
 					votifier.getLogger().printlnTranslation("s17");
 				}
-			} else if (command.equalsIgnoreCase("restart") || command.toLowerCase().startsWith("restart ")) {
-				if (command.split(" ").length == 1) {
-					Listener listener = new Listener() {
+			} else if (args[0].equals("restart")) {
+				if (args.length == 1) {
+					votifier.getServer().getListeners().add(new Listener() {
 						@Override
-						public void onEvent(Event event, VanillaVotifier votifier) {
+						public void onEvent(@NotNull Event event) {
 							if (event instanceof ServerStoppedEvent) {
-								if (loadConfig((VanillaVotifier) votifier) && startServer((VanillaVotifier) votifier)) {
+								if (votifier.loadConfig() && votifier.startServer()) {
 									votifier.getServer().getListeners().remove(this);
 								} else {
+									try {
+										reader.close();
+									} catch (Exception e) {
+										// Whatever happens, close anyway.
+									}
 									System.exit(0);
 								}
 							}
 						}
-					};
-					votifier.getServer().getListeners().add(listener);
-					if (!stopServer(votifier)) { // Kill the process if the server doesn't stop
-						System.exit(0); // "return" somehow isn't enough.
-						return;
-					}
+					});
+					votifier.stopServer();
 				} else {
 					votifier.getLogger().printlnTranslation("s56");
 				}
-			} else if (command.equalsIgnoreCase("gen-key-pair") || command.startsWith("gen-key-pair ")) {
-				String[] commandArgs = command.split(" ");
+			} else if (args[0].equals("genkeypair")) {
 				int keySize;
-				if (commandArgs.length == 1) {
+				if (args.length == 1) {
 					keySize = 2048;
-				} else if (commandArgs.length == 2) {
+				} else if (args.length == 2) {
 					try {
-						keySize = Integer.parseInt(commandArgs[1]);
+						keySize = Integer.parseInt(args[1]);
 					} catch (NumberFormatException e) {
 						votifier.getLogger().printlnTranslation("s19");
 						continue;
@@ -157,147 +156,145 @@ public class VanillaVotifier {
 					continue;
 				}
 				votifier.getLogger().printlnTranslation("s16");
-				votifier.getConfig().genKeyPair(keySize);
+				votifier.getConfig().generateKeyPair(keySize);
 				try {
-					votifier.getConfig().save();
+					votifier.getConfig().saveKeyPair();
 				} catch (Exception e) {
-					votifier.getLogger().printlnTranslation("s21", new AbstractMap.SimpleEntry<String, Object>("exception", e));
+					votifier.getLogger().printlnTranslation("s21", new SimpleEntry<String, Object>("exception", e));
 				}
-				votifier.getLogger().printlnTranslation("s23");
-			} else if (command.equalsIgnoreCase("test-vote") || command.toLowerCase().startsWith("test-vote ")) {
-				String[] commandArgs = command.split(" ");
-				if (commandArgs.length == 2) {
+				votifier.getLogger().printlnTranslation("s23", new SimpleEntry<String, Object>("key", RsaUtils.keyToString(votifier.getConfig().getKeyPair().getPublic())));
+			} else if (args[0].equals("testvote")) {
+				if (args.length == 2) {
 					try {
-						votifier.getTester().testVote(new Vote("TesterService", commandArgs[1], votifier.getConfig().getInetSocketAddress().getAddress().getHostName()));
+						votifier.getTester().testVote(new Vote("TesterService", args[1], votifier.getConfig().getInetSocketAddress().getAddress().getHostName()));
 					} catch (Exception e) { // GeneralSecurityException, IOException
-						votifier.getLogger().printlnTranslation("s27", new AbstractMap.SimpleEntry<String, Object>("exception", e));
+						votifier.getLogger().printlnTranslation("s27", new SimpleEntry<String, Object>("exception", e));
 					}
 				} else {
 					votifier.getLogger().printlnTranslation("s26");
 				}
-			} else if (command.equalsIgnoreCase("test-query") || command.toLowerCase().startsWith("test-query ")) {
-				if (command.split(" ").length >= 2) {
+			} else if (args[0].equals("testquery")) {
+				if (args.length >= 2) {
 					try {
-						votifier.getTester().testQuery(command.replaceFirst("test-query ", "").replaceAll("---", "\n"));
+						StringBuilder message = new StringBuilder();
+						for (int i = 1; i < args.length - 1; i++) {
+							message.append(args[i]).append("\n");
+						}
+						message.append(args[args.length - 1]);
+						votifier.getTester().testQuery(message.toString());
 					} catch (Exception e) { // GeneralSecurityException, IOException
-						votifier.getLogger().printlnTranslation("s35", new AbstractMap.SimpleEntry<String, Object>("exception", e));
+						votifier.getLogger().printlnTranslation("s35", new SimpleEntry<String, Object>("exception", e));
 					}
 				} else {
 					votifier.getLogger().printlnTranslation("s34");
 				}
-			} else if (command.equalsIgnoreCase("help") || command.toLowerCase().startsWith("help ")) {
-				if (command.split(" ").length == 1) {
+			} else if (args[0].equals("help")) {
+				if (args.length == 1) {
 					votifier.getLogger().printlnTranslation("s31");
 				} else {
 					votifier.getLogger().printlnTranslation("s32");
 				}
-			} else if (command.equalsIgnoreCase("manual") || command.toLowerCase().startsWith("manual ")) {
-				if (command.split(" ").length == 1) {
-					votifier.getLogger().printlnTranslation("s36");
-				} else {
-					votifier.getLogger().printlnTranslation("s37");
-				}
-			} else if (command.equalsIgnoreCase("info") || command.toLowerCase().startsWith("info ")) {
-				if (command.split(" ").length == 1) {
+			} else if (args[0].equals("info")) {
+				if (args.length == 1) {
 					votifier.getLogger().printlnTranslation("s40");
 				} else {
 					votifier.getLogger().printlnTranslation("s41");
 				}
-			} else if (command.equalsIgnoreCase("license") || command.toLowerCase().startsWith("license ")) {
-				if (command.split(" ").length == 1) {
-					votifier.getLogger().printlnTranslation("s43");
-				} else {
-					votifier.getLogger().printlnTranslation("s44");
+			} else if (args[0].equals("showkey")) {
+				if (args.length == 2) {
+					if (args[2].equals("pub") || args[2].equals("public")) {
+						votifier.getLogger().println(RsaUtils.keyToString(votifier.getConfig().getKeyPair().getPublic()));
+						continue;
+					} else if (args[2].equals("priv") || args[2].equals("private")) {
+						votifier.getLogger().println(RsaUtils.keyToString(votifier.getConfig().getKeyPair().getPrivate()));
+						continue;
+					}
 				}
+				votifier.getLogger().printTranslation("s63");
 			} else {
 				votifier.getLogger().printlnTranslation("s33");
 			}
 		}
+
+		reader.close();
 	}
 
-	private static boolean loadConfig(VanillaVotifier votifier) {
-		votifier.getLogger().printlnTranslation("s24");
+	protected boolean loadConfig() {
+		getLogger().printlnTranslation("s24");
 		try {
-			votifier.getConfig().load();
-			votifier.getRcons().clear();
-			for (RconConfig rconConfig : votifier.getConfig().getRconConfigs()) {
-				votifier.getRcons().add(new Rcon(rconConfig));
-			}
-			votifier.getLogger().printlnTranslation("s25");
+			getConfig().load();
+			getLogger().printlnTranslation("s25");
 			return true;
 		} catch (JSONException e) {
-			votifier.getLogger().printlnTranslation("s45", new AbstractMap.SimpleEntry<String, Object>("exception", e.getMessage().replaceAll("'", "\"")));
+			getLogger().printlnTranslation("s45", new SimpleEntry<String, Object>("exception", e.getMessage().replaceAll("'", "\"")));
 		} catch (PublicKeyFileNotFoundException e) {
-			votifier.getLogger().printlnTranslation("s49");
+			getLogger().printlnTranslation("s49");
 		} catch (PrivateKeyFileNotFoundException e) {
-			votifier.getLogger().printlnTranslation("s50");
+			getLogger().printlnTranslation("s50");
 		} catch (InvalidPublicKeyFileException e) {
-			votifier.getLogger().printlnTranslation("s47");
+			getLogger().printlnTranslation("s47");
 		} catch (InvalidPrivateKeyFileException e) {
-			votifier.getLogger().printlnTranslation("s48");
+			getLogger().printlnTranslation("s48");
 		} catch (FileNotFoundException e) {
-			if (votifier.configFile.exists()) {
-				votifier.getLogger().printlnTranslation("s18");
+			if (configFile.exists()) {
+				getLogger().printlnTranslation("s18");
 			} else {
-				votifier.getLogger().printlnTranslation("s15", new AbstractMap.SimpleEntry<String, Object>("exception", e));
+				getLogger().printlnTranslation("s15", new SimpleEntry<String, Object>("exception", e));
 			}
 		} catch (Exception e) {
-			votifier.getLogger().printlnTranslation("s15", new AbstractMap.SimpleEntry<String, Object>("exception", e));
+			getLogger().printlnTranslation("s15", new SimpleEntry<String, Object>("exception", e));
 		}
 		return false;
 	}
 
-	private static boolean startServer(VanillaVotifier votifier) {
+	protected boolean startServer() {
 		try {
-			votifier.getServer().start();
+			getServer().start();
 			return true;
 		} catch (BindException e) {
-			votifier.getLogger().printlnTranslation("s38", new AbstractMap.SimpleEntry<String, Object>("port", votifier.getConfig().getInetSocketAddress().getPort()));
+			getLogger().printlnTranslation("s38", new SimpleEntry<String, Object>("port", getConfig().getInetSocketAddress().getPort()));
 		} catch (Exception e) {
-			votifier.getLogger().printlnTranslation("s13", new AbstractMap.SimpleEntry<String, Object>("exception", e));
+			getLogger().printlnTranslation("s13", new SimpleEntry<String, Object>("exception", e));
 		}
 		return false;
 	}
 
-	private static boolean stopServer(VanillaVotifier votifier) {
+	protected boolean stopServer() {
 		try {
-			votifier.getServer().stop();
+			getServer().stop();
 			return true;
 		} catch (Exception e) {
-			votifier.getLogger().printlnTranslation("s12", new AbstractMap.SimpleEntry<String, Object>("exception", e));
+			getLogger().printlnTranslation("s12", new SimpleEntry<String, Object>("exception", e));
 		}
 		return false;
 	}
 
+	@NotNull
+	public Writer getWriter() {
+		return writer;
+	}
+
+	@NotNull
 	public LanguagePack getLanguagePack() {
 		return languagePack;
 	}
 
+	@NotNull
 	public Logger getLogger() {
 		return logger;
 	}
 
+	@NotNull
 	public Config getConfig() {
 		return config;
 	}
 
-	public CommandSender getCommandSender() {
-		return commandSender;
-	}
-
+	@NotNull
 	public VotifierServer getServer() {
 		return server;
 	}
 
-	public List<Rcon> getRcons() {
-		return rcons;
-	}
-
-	public VotifierTester getTester() {
+	public @NotNull Tester getTester() {
 		return tester;
-	}
-
-	public boolean areExceptionsReported() {
-		return reportExceptions;
 	}
 }

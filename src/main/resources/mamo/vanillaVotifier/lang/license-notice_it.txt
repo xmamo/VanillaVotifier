@@ -1,7 +1,0 @@
-================================ LICENSE NOTICE ================================
-VanillaVotifier  Copyright (C) 2015  Matteo Morena
-Questo programma viene fornito SENZA ALCUNA GARANZIA. Questo è software libero,
-ed è libero, ed è possibile apportarne modifiche sotto certe condizioni.
-Per maggiori informazioni, digitare "license" o visitare il sito
-http://www.gnu.org/licenses/gpl-3.0-standalone.html
-================================================================================

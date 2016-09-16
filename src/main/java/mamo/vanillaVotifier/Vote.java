@@ -17,45 +17,43 @@
 
 package mamo.vanillaVotifier;
 
-import java.sql.Timestamp;
-import java.util.Calendar;
+import mamo.vanillaVotifier.utils.TimestampUtils;
+import org.jetbrains.annotations.NotNull;
 
 public class Vote {
-	private final String serviceName;
-	private final String userName;
-	private final String address;
-	private final String timeStamp;
-	private final String empty;
+	@NotNull protected String serviceName;
+	@NotNull protected String userName;
+	@NotNull protected String address;
+	@NotNull protected String timeStamp;
 
 	public Vote(String serviceName, String userName, String address) {
-		this(serviceName, userName, address, new Timestamp(Calendar.getInstance().getTime().getTime()).toString(), null);
+		this(serviceName, userName, address, TimestampUtils.getTimestamp());
 	}
 
-	public Vote(String serviceName, String userName, String address, String timeStamp, String empty) {
+	public Vote(@NotNull String serviceName, @NotNull String userName, @NotNull String address, @NotNull String timeStamp) {
 		this.serviceName = serviceName;
 		this.userName = userName;
 		this.address = address;
 		this.timeStamp = timeStamp;
-		this.empty = empty;
 	}
 
+	@NotNull
 	public String getServiceName() {
 		return serviceName;
 	}
 
+	@NotNull
 	public String getUserName() {
 		return userName;
 	}
 
+	@NotNull
 	public String getAddress() {
 		return address;
 	}
 
+	@NotNull
 	public String getTimeStamp() {
 		return timeStamp;
-	}
-
-	public String getEmpty() {
-		return empty;
 	}
 }

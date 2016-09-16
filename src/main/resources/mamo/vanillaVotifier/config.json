@@ -1,21 +1,21 @@
 {
-	"config-version": 3,
-	"log-file": "votifier.log",
-	"ip": "127.0.0.1",
-	"port": 8192,
-	"key-pair-files": {
-		"public": "public.pem",
-		"private": "private.pem"
-	},
-	"rcon-list": [
-		{
-			"ip": "127.0.0.1",
-			"port": 25575,
-			"password": "password",
-			"commands": [
-				"tellraw @a {\"text\":\"${user-name} has just voted for this server on ${service-name}. Thanks!\",\"color\":\"yellow\"}",
-				"scoreboard players add ${user-name} voted 1"
-			]
-		}
-	]
+  "config-version": 3,
+  "log-file": "votifier.log",
+  "ip": "127.0.0.1",
+  "port": 8192,
+  "key-pair-files": {
+    "public": "public.pem",
+    "private": "private.pem"
+  },
+  "rcon-list": [
+    {
+      "ip": "127.0.0.1",
+      "port": 25575,
+      "password": "password",
+      "commands": [
+        "tellraw @a {\"text\":\"${user-name} has just voted for this server on ${service-name}. Thanks!\",\"color\":\"yellow\"}",
+        "scoreboard players add ${user-name} voted 1"
+      ]
+    }
+  ]
 }

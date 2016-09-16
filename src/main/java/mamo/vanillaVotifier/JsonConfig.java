@@ -17,56 +17,30 @@
 
 package mamo.vanillaVotifier;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.security.KeyPair;
-import java.security.spec.InvalidKeySpecException;
-import java.util.ArrayList;
-import mamo.vanillaVotifier.exception.InvalidPrivateKeyFileException;
-import mamo.vanillaVotifier.exception.InvalidPublicKeyFileException;
-import mamo.vanillaVotifier.exception.PrivateKeyFileNotFoundException;
-import mamo.vanillaVotifier.exception.PublicKeyFileNotFoundException;
-import mamo.vanillaVotifier.util.JsonUtils;
-import mamo.vanillaVotifier.util.RsaUtils;
-import org.bouncycastle.util.io.pem.PemObject;
-import org.bouncycastle.util.io.pem.PemReader;
-import org.bouncycastle.util.io.pem.PemWriter;
+import mamo.vanillaVotifier.utils.JsonUtils;
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
+import java.io.*;
+import java.net.InetSocketAddress;
+import java.security.spec.InvalidKeySpecException;
+import java.util.List;
+
 @Deprecated
 public class JsonConfig extends AbstractConfig {
-	public JsonConfig(File configFile) {
-		this.configFile = configFile;
+	public JsonConfig(@NotNull File configFile) {
+		super(configFile);
+		logDirectory = logDirectory.getParentFile();
 	}
 
 	@Override
 	public synchronized void load() throws IOException, InvalidKeySpecException {
 		if (!configFile.exists()) {
-			BufferedInputStream in = new BufferedInputStream(JsonConfig.class.getResourceAsStream("config.json"));
-			StringBuilder stringBuilder = new StringBuilder();
-			int i;
-			while ((i = in.read()) != -1) {
-				stringBuilder.append((char) i);
-			}
-			BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(configFile));
-			for (char c : stringBuilder.toString().replaceAll("\\u000D\\u000A|[\\u000A\\u000B\\u000C\\u000D\\u0085\\u2028\\u2029]", System.getProperty("line.separator")).toCharArray()) {
-				out.write((int) c);
-			}
-			out.flush();
-			out.close();
+			copyDefaultConfig(YamlConfig.class.getResourceAsStream("config.json"));
 		}
-		BufferedInputStream in = new BufferedInputStream(JsonConfig.class.getResourceAsStream("config.json"));
+		@SuppressWarnings("deprecation") BufferedInputStream in = new BufferedInputStream(JsonConfig.class.getResourceAsStream("config.json"));
 		JSONObject defaultConfig = new JSONObject(new JSONTokener(in));
 		in.close();
 		JSONObject config = new JSONObject(new JSONTokener(new BufferedInputStream(new FileInputStream(configFile))));
@@ -81,46 +55,12 @@ public class JsonConfig extends AbstractConfig {
 		inetSocketAddress = new InetSocketAddress(config.getString("ip"), config.getInt("port"));
 		publicKeyFile = new File(config.getJSONObject("key-pair-files").getString("public"));
 		privateKeyFile = new File(config.getJSONObject("key-pair-files").getString("private"));
-		if (!publicKeyFile.exists() && !privateKeyFile.exists()) {
-			KeyPair keyPair = RsaUtils.genKeyPair();
-			PemWriter publicPemWriter = new PemWriter(new BufferedWriter(new FileWriter(publicKeyFile)));
-			publicPemWriter.writeObject(new PemObject("PUBLIC KEY", keyPair.getPublic().getEncoded()));
-			publicPemWriter.flush();
-			publicPemWriter.close();
-			PemWriter privatePemWriter = new PemWriter(new BufferedWriter(new FileWriter(privateKeyFile)));
-			privatePemWriter.writeObject(new PemObject("RSA PRIVATE KEY", keyPair.getPrivate().getEncoded()));
-			privatePemWriter.flush();
-			privatePemWriter.close();
-		}
-		if (!publicKeyFile.exists()) {
-			throw new PublicKeyFileNotFoundException();
-		}
-		if (!privateKeyFile.exists()) {
-			throw new PrivateKeyFileNotFoundException();
-		}
-		PemReader publicKeyPemReader = new PemReader(new BufferedReader(new FileReader(publicKeyFile)));
-		PemReader privateKeyPemReader = new PemReader(new BufferedReader(new FileReader(privateKeyFile)));
-		PemObject publicPemObject = publicKeyPemReader.readPemObject();
-		if (publicPemObject == null) {
-			throw new InvalidPublicKeyFileException();
-		}
-		PemObject privatePemObject = privateKeyPemReader.readPemObject();
-		if (privatePemObject == null) {
-			throw new InvalidPrivateKeyFileException();
-		}
-		keyPair = new KeyPair(RsaUtils.bytesToPublicKey(publicPemObject.getContent()), RsaUtils.bytesToPrivateKey(privatePemObject.getContent()));
-		publicKeyPemReader.close();
-		privateKeyPemReader.close();
-		rconConfigs = new ArrayList<RconConfig>();
+		loadKeyPair();
+		voteActions.clear();
 		for (int i = 0; i < config.getJSONArray("rcon-list").length(); i++) {
 			JSONObject jsonObject = config.getJSONArray("rcon-list").getJSONObject(i);
-			RconConfig rconConfig = new RconConfig(new InetSocketAddress(jsonObject.getString("ip"), jsonObject.getInt("port")), jsonObject.getString("password"));
-			for (int j = 0; j < jsonObject.getJSONArray("commands").length(); j++) {
-				rconConfig.getCommands().add(jsonObject.getJSONArray("commands").getString(j));
-			}
-			rconConfigs.add(rconConfig);
+			voteActions.add(new VoteAction(new RconCommandSender(new RconConnection(new InetSocketAddress(jsonObject.getString("ip"), jsonObject.getInt("port")), jsonObject.getString("password"))), (List<String>) jsonObject.get("commands")));
 		}
-		loaded = true;
 		if (save) {
 			save();
 		}
@@ -158,13 +98,14 @@ public class JsonConfig extends AbstractConfig {
 		});
 		config.put("rcon-list", new JSONArray() {
 			{
-				for (final RconConfig rconConfig : getRconConfigs()) {
+				for (final VoteAction voteAction : getVoteActions()) {
+					final RconCommandSender commandSender = (RconCommandSender) voteAction.getCommandSender();
 					put(new JSONObject() {
 						{
-							put("ip", rconConfig.getInetSocketAddress().getAddress().toString());
-							put("port", rconConfig.getInetSocketAddress().getPort());
-							put("password", rconConfig.getPassword());
-							put("commands", rconConfig.getCommands());
+							put("ip", commandSender.getRconConnection().getInetSocketAddress().getAddress().toString());
+							put("port", commandSender.getRconConnection().getInetSocketAddress().getPort());
+							put("password", commandSender.getRconConnection().getPassword());
+							put("commands", voteAction.getCommands());
 						}
 					});
 				}
@@ -174,13 +115,6 @@ public class JsonConfig extends AbstractConfig {
 		out.write(JsonUtils.jsonToPrettyString(config));
 		out.flush();
 		out.close();
-		PemWriter publicPemWriter = new PemWriter(new BufferedWriter(new FileWriter(getPublicKeyFile())));
-		publicPemWriter.writeObject(new PemObject("PUBLIC KEY", getKeyPair().getPublic().getEncoded()));
-		publicPemWriter.flush();
-		publicPemWriter.close();
-		PemWriter privatePemWriter = new PemWriter(new BufferedWriter(new FileWriter(getPrivateKeyFile())));
-		privatePemWriter.writeObject(new PemObject("RSA PRIVATE KEY", getKeyPair().getPrivate().getEncoded()));
-		privatePemWriter.flush();
-		privatePemWriter.close();
+		saveKeyPair();
 	}
 }

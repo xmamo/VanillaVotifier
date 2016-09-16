@@ -17,23 +17,19 @@
 
 package mamo.vanillaVotifier;
 
-public class VotifierPacket {
-	private int length;
-	private int requestId;
-	private Type type;
-	private String payload;
+import org.jetbrains.annotations.NotNull;
 
-	public VotifierPacket(int requestId, Type type, String payload) {
+public class VotifierPacket {
+	protected int length;
+	protected int requestId;
+	@NotNull protected Type type;
+	@NotNull protected String payload;
+
+	public VotifierPacket(int requestId, @NotNull Type type, @NotNull String payload) {
 		this(Integer.SIZE / 8 + Integer.SIZE / 8 + payload.length() + Byte.SIZE / 8 * 2, requestId, type, payload);
 	}
 
-	public VotifierPacket(int length, int requestId, Type type, String payload) {
-		if (type == null) {
-			throw new IllegalArgumentException("type can't be null!");
-		}
-		if (payload == null) {
-			payload = "";
-		}
+	public VotifierPacket(int length, int requestId, @NotNull Type type, @NotNull String payload) {
 		this.length = length;
 		this.requestId = requestId;
 		this.type = type;
@@ -48,30 +44,23 @@ public class VotifierPacket {
 		return requestId;
 	}
 
+	@NotNull
 	public Type getType() {
 		return type;
 	}
 
+	@NotNull
 	public String getPayload() {
 		return payload;
 	}
 
-	@Override
-	public String toString() {
-		return length + "---" + requestId + "---" + type.toInt() + "---" + payload;
-	}
-
-	public static enum Type {
+	public enum Type {
 		COMMAND_RESPONSE(0), COMMAND(2), LOG_IN(3);
 
-		private int i;
+		protected int i;
 
-		private Type(int i) {
+		Type(int i) {
 			this.i = i;
-		}
-
-		public int toInt() {
-			return i;
 		}
 
 		public static VotifierPacket.Type fromInt(int i) {
@@ -84,6 +73,10 @@ public class VotifierPacket {
 			} else {
 				throw new IllegalArgumentException("i has to be equal to 0, 2, or 3!");
 			}
+		}
+
+		public int toInt() {
+			return i;
 		}
 	}
 }
