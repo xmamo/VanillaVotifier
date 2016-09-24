@@ -28,6 +28,8 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.List;
 
 public interface Config {
+	@NotNull File getConfigFile();
+
 	void load() throws IOException, InvalidKeySpecException;
 
 	int getConfigVersion();

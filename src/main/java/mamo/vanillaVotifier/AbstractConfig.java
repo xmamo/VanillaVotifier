@@ -51,6 +51,11 @@ public abstract class AbstractConfig implements Config {
 	}
 
 	@Override
+	public File getConfigFile() {
+		return configFile;
+	}
+
+	@Override
 	public synchronized int getConfigVersion() {
 		return configVersion;
 	}
