@@ -45,14 +45,25 @@ import java.util.AbstractMap.SimpleEntry;
 import java.util.List;
 
 public class VanillaVotifier {
-	@Nullable protected static Writer writer;
+	@NotNull protected LanguagePack languagePack;
+	@NotNull protected Writer writer;
+	@NotNull protected Logger logger;
+	@NotNull protected YamlConfig config;
+	@NotNull protected VotifierServer server;
+	@NotNull protected Tester tester;
 
-	@NotNull protected LanguagePack languagePack = new LanguagePack("mamo/vanillaVotifier/lang", "lang");
-	@NotNull protected Logger logger = new Logger(this);
-	@NotNull protected File configFile = new File("config.yaml");
-	@NotNull protected YamlConfig config = new YamlConfig(configFile);
-	@NotNull protected VotifierServer server = new VotifierServer(this);
-	@NotNull protected Tester tester = new Tester(this);
+	public VanillaVotifier(@NotNull LanguagePack languagePack, @NotNull Writer logWriter, @NotNull File configFile) {
+		this.languagePack = languagePack;
+		writer = logWriter;
+		logger = new Logger(this);
+		if (configFile.getName().toLowerCase().endsWith(".json")) {
+			config = new YamlConfig(new File(configFile.getParent(), configFile.getName().substring(0, configFile.getName().length() - ".json".length()) + ".yaml"), new JsonConfig(configFile));
+		} else {
+			config = new YamlConfig(configFile);
+		}
+		server = new VotifierServer(this);
+		tester = new Tester(this);
+	}
 
 	public static void main(@Nullable String[] arguments) throws IOException {
 		String[] javaVersion = System.getProperty("java.version").split("\\.");
@@ -63,7 +74,6 @@ public class VanillaVotifier {
 
 		WhitespaceArgumentDelimiter delimiter = new WhitespaceArgumentDelimiter();
 		final ConsoleReader reader = new ConsoleReader();
-		writer = reader.getOutput();
 		reader.setExpandEvents(false);
 		reader.setHandleUserInterrupt(true);
 		reader.addCompleter(new StringsCompleter("help", "info", "stop", "restart", "genkeypair", "showkey", "testquery", "testvote"));
@@ -75,7 +85,7 @@ public class VanillaVotifier {
 			}
 		}));
 
-		final VanillaVotifier votifier = new VanillaVotifier();
+		final VanillaVotifier votifier = new VanillaVotifier(new LanguagePack("mamo/vanillaVotifier/lang", "lang"), reader.getOutput(), new File("config.json").exists() ? new File("config.json") : new File("config.yaml"));
 		if (!(votifier.loadConfig() && votifier.startServer())) {
 			return;
 		}
@@ -236,7 +246,7 @@ public class VanillaVotifier {
 		} catch (InvalidPrivateKeyFileException e) {
 			getLogger().printlnTranslation("s48");
 		} catch (FileNotFoundException e) {
-			if (configFile.exists()) {
+			if (getConfig().getConfigFile().exists()) {
 				getLogger().printlnTranslation("s18");
 			} else {
 				getLogger().printlnTranslation("s15", new SimpleEntry<String, Object>("exception", e));

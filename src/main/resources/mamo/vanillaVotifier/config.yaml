@@ -1,7 +1,7 @@
 # The config version. Used internally by VanillaVotifier. Please don't touch!
 config-version: 4
 
-# The relatoive path to the directory in which to save the log files.
+# The relative path to the directory in which to save the log files.
 # If the directory doesn't exist, it will be created.
 log-directory: 'logs'
 
@@ -34,13 +34,13 @@ on-vote:
     # "${timestamp}" will be replaced with the time stamp in which the player has voted. Format may vary depending on voting service.
     #
     # It is not recommended to use commands such as "/give", "/effect", etc., since they wouldn't work if the player is offline.
-    # Instead, set a certain score (since "/scoreboard players set" commands always work) and handle rewarding through an ingame Command Block clock which is always loaded.
+    # Instead, set a certain score (using the "/scoreboard players set <player> <objective> <score> [dataTag]" command) and handle rewarding through an ingame Command Block clock which is always loaded.
     commands:
       - 'tellraw @a {"text":"${user-name} has just voted for this server on ${service-name}. Thanks!","color":"yellow"}'
       - 'scoreboard players add ${user-name} voted 1'
 
-  # Executes one or more commands through the system shell.
-  # Environment will setup the following variables: "voteServiceName", "voteUserName", "voteAddress", "voteTimestamp".
+  # Executes one or more programs/commands.
+  # The following environment variables will be set up: "voteServiceName" to ${service-name}, "voteUserName" to ${user-name}, "voteAddress" to ${address}, "voteTimestamp" to ${timestamp}.
   - action: 'shell'
     commands:
       - 'test -x onvote.sh && ./onvote.sh' # "CMD /C IF EXIST onvote.bat onvote.bat" on Windows.
