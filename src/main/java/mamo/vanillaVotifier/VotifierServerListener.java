@@ -57,7 +57,7 @@ public class VotifierServerListener implements Listener {
 		} else if (event instanceof SendingRconCommandEvent) {
 			SendingRconCommandEvent sendingRconCommandEvent = (SendingRconCommandEvent) event;
 			votifier.getLogger().printlnTranslation("s5",
-					new SimpleEntry<String, Object>("ip", sendingRconCommandEvent.getRconConnection().getInetSocketAddress().getAddress().toString()),
+					new SimpleEntry<String, Object>("ip", sendingRconCommandEvent.getRconConnection().getInetSocketAddress().getAddress().getHostName()),
 					new SimpleEntry<String, Object>("port", sendingRconCommandEvent.getRconConnection().getInetSocketAddress().getPort()),
 					new SimpleEntry<String, Object>("command", sendingRconCommandEvent.getCommand()));
 		} else if (event instanceof RconCommandResponseEvent) {

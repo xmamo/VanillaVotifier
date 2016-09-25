@@ -26,24 +26,30 @@ import org.json.JSONTokener;
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.security.spec.InvalidKeySpecException;
-import java.util.List;
+import java.util.ArrayList;
 
 @Deprecated
 public class JsonConfig extends AbstractConfig {
 	public JsonConfig(@NotNull File configFile) {
 		super(configFile);
-		logDirectory = logDirectory.getParentFile();
 	}
 
 	@Override
 	public synchronized void load() throws IOException, InvalidKeySpecException {
 		if (!configFile.exists()) {
-			copyDefaultConfig(YamlConfig.class.getResourceAsStream("config.json"));
+			InputStream in = YamlConfig.class.getResourceAsStream("config.json");
+			copyDefaultConfig(in);
+			in.close();
 		}
-		@SuppressWarnings("deprecation") BufferedInputStream in = new BufferedInputStream(JsonConfig.class.getResourceAsStream("config.json"));
-		JSONObject defaultConfig = new JSONObject(new JSONTokener(in));
-		in.close();
-		JSONObject config = new JSONObject(new JSONTokener(new BufferedInputStream(new FileInputStream(configFile))));
+
+		@SuppressWarnings("deprecation") BufferedInputStream defaultConfigIn = new BufferedInputStream(JsonConfig.class.getResourceAsStream("config.json"));
+		JSONObject defaultConfig = new JSONObject(new JSONTokener(defaultConfigIn));
+		defaultConfigIn.close();
+
+		BufferedInputStream configIn = new BufferedInputStream(new FileInputStream(configFile));
+		JSONObject config = new JSONObject(new JSONTokener(configIn));
+		configIn.close();
+
 		boolean save = JsonUtils.merge(defaultConfig, config);
 		configVersion = config.getInt("config-version");
 		if (configVersion == 2) {
@@ -52,6 +58,7 @@ public class JsonConfig extends AbstractConfig {
 			save = true;
 		}
 		logFile = new File(config.getString("log-file"));
+		logDirectory = logFile.getParentFile();
 		inetSocketAddress = new InetSocketAddress(config.getString("ip"), config.getInt("port"));
 		publicKeyFile = new File(config.getJSONObject("key-pair-files").getString("public"));
 		privateKeyFile = new File(config.getJSONObject("key-pair-files").getString("private"));
@@ -59,7 +66,12 @@ public class JsonConfig extends AbstractConfig {
 		voteActions.clear();
 		for (int i = 0; i < config.getJSONArray("rcon-list").length(); i++) {
 			JSONObject jsonObject = config.getJSONArray("rcon-list").getJSONObject(i);
-			voteActions.add(new VoteAction(new RconCommandSender(new RconConnection(new InetSocketAddress(jsonObject.getString("ip"), jsonObject.getInt("port")), jsonObject.getString("password"))), (List<String>) jsonObject.get("commands")));
+			JSONArray commandsJsonArray = jsonObject.getJSONArray("commands");
+			ArrayList<String> commands = new ArrayList<String>();
+			for (int j = 0; j < commandsJsonArray.length(); j++) {
+				commands.add(commandsJsonArray.getString(j));
+			}
+			voteActions.add(new VoteAction(new RconCommandSender(new RconConnection(new InetSocketAddress(jsonObject.getString("ip"), jsonObject.getInt("port")), jsonObject.getString("password"))), commands));
 		}
 		if (save) {
 			save();
@@ -71,11 +83,9 @@ public class JsonConfig extends AbstractConfig {
 			jsonObject.put("commands", new JSONArray());
 		}
 		if (!jsonObject.has("rcon-list")) {
-			jsonObject.put("rcon-list", new JSONArray() {
-				{
-					put(new JSONObject());
-				}
-			});
+			jsonObject.put("rcon-list", new JSONArray() {{
+				put(new JSONObject());
+			}});
 		}
 		jsonObject.getJSONArray("rcon-list").put(jsonObject.get("rcon-list"));
 		jsonObject.getJSONArray("rcon-list").getJSONObject(0).put("commands", jsonObject.get("commands"));
@@ -88,29 +98,24 @@ public class JsonConfig extends AbstractConfig {
 		JSONObject config = new JSONObject();
 		config.put("config-version", getConfigVersion());
 		config.put("log-file", getLogFile().getPath());
-		config.put("ip", getInetSocketAddress().getAddress().toString());
+		config.put("ip", getInetSocketAddress().getAddress().getHostName());
 		config.put("port", getInetSocketAddress().getPort());
-		config.put("key-pair-files", new JSONObject() {
-			{
-				put("public", getPublicKeyFile().getPath());
-				put("private", getPrivateKeyFile().getPath());
+		config.put("key-pair-files", new JSONObject() {{
+			put("public", getPublicKeyFile().getPath());
+			put("private", getPrivateKeyFile().getPath());
+		}});
+		config.put("rcon-list", new JSONArray() {{
+			for (final VoteAction voteAction : getVoteActions()) {
+				final RconCommandSender commandSender = (RconCommandSender) voteAction.getCommandSender();
+				put(new JSONObject() {{
+					put("ip", commandSender.getRconConnection().getInetSocketAddress().getAddress().getHostName());
+					put("port", commandSender.getRconConnection().getInetSocketAddress().getPort());
+					put("password", commandSender.getRconConnection().getPassword());
+					put("commands", voteAction.getCommands());
+				}});
 			}
-		});
-		config.put("rcon-list", new JSONArray() {
-			{
-				for (final VoteAction voteAction : getVoteActions()) {
-					final RconCommandSender commandSender = (RconCommandSender) voteAction.getCommandSender();
-					put(new JSONObject() {
-						{
-							put("ip", commandSender.getRconConnection().getInetSocketAddress().getAddress().toString());
-							put("port", commandSender.getRconConnection().getInetSocketAddress().getPort());
-							put("password", commandSender.getRconConnection().getPassword());
-							put("commands", voteAction.getCommands());
-						}
-					});
-				}
-			}
-		});
+		}});
+
 		BufferedWriter out = new BufferedWriter(new FileWriter(configFile));
 		out.write(JsonUtils.jsonToPrettyString(config));
 		out.flush();

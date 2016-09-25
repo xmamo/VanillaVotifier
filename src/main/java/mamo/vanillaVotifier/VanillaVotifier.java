@@ -32,13 +32,13 @@ import mamo.vanillaVotifier.exception.PublicKeyFileNotFoundException;
 import mamo.vanillaVotifier.utils.RsaUtils;
 import mamo.vanillaVotifier.utils.TimestampUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONException;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.Writer;
 import java.net.BindException;
 import java.util.AbstractMap.SimpleEntry;
@@ -65,15 +65,21 @@ public class VanillaVotifier {
 		tester = new Tester(this);
 	}
 
-	public static void main(@Nullable String[] arguments) throws IOException {
+	public static void main(@Nullable String[] arguments) {
 		String[] javaVersion = System.getProperty("java.version").split("\\.");
 		if (!(javaVersion.length >= 1 && Integer.parseInt(javaVersion[0]) >= 1 && javaVersion.length >= 2 && Integer.parseInt(javaVersion[1]) >= 6)) {
 			System.out.println(("You need at least Java 1.6 to run this program! Current version: " + System.getProperty("java.version") + "."));
 			return;
 		}
 
+		final ConsoleReader reader;
+		try {
+			reader = new ConsoleReader();
+		} catch (Exception e) { // IOException
+			System.out.println("Unexpected exception while initializing console reader: " + ExceptionUtils.getStackTrace(e));
+			return;
+		}
 		WhitespaceArgumentDelimiter delimiter = new WhitespaceArgumentDelimiter();
-		final ConsoleReader reader = new ConsoleReader();
 		reader.setExpandEvents(false);
 		reader.setHandleUserInterrupt(true);
 		reader.addCompleter(new StringsCompleter("help", "info", "stop", "restart", "genkeypair", "showkey", "testquery", "testvote"));
@@ -85,7 +91,7 @@ public class VanillaVotifier {
 			}
 		}));
 
-		final VanillaVotifier votifier = new VanillaVotifier(new LanguagePack("mamo/vanillaVotifier/lang", "lang"), reader.getOutput(), new File("config.json").exists() ? new File("config.json") : new File("config.yaml"));
+		final VanillaVotifier votifier = new VanillaVotifier(new LanguagePack("mamo/vanillaVotifier/lang", "lang"), reader.getOutput(), new File("config.json").exists() && !new File("config.yaml").exists() ? new File("config.json") : new File("config.yaml"));
 		if (!(votifier.loadConfig() && votifier.startServer())) {
 			return;
 		}
@@ -128,11 +134,6 @@ public class VanillaVotifier {
 								if (votifier.loadConfig() && votifier.startServer()) {
 									votifier.getServer().getListeners().remove(this);
 								} else {
-									try {
-										reader.close();
-									} catch (Exception e) {
-										// Whatever happens, close anyway.
-									}
 									System.exit(0);
 								}
 							}
@@ -225,8 +226,6 @@ public class VanillaVotifier {
 				votifier.getLogger().printlnTranslation("s33");
 			}
 		}
-
-		reader.close();
 	}
 
 	protected boolean loadConfig() {
