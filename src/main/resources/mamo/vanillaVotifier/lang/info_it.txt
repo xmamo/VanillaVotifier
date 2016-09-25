@@ -1,0 +1,26 @@
+VanillaVotifier ${pom.version}, sviluppato da Matteo Morena.
+
+Librerie utilizzate:
+
+ * IntelliJ IDEA Annotations, sotto licenza Apache License, versione 2.0:
+   http://www.apache.org/licenses/LICENSE-2.0
+
+ * Commons Lang, sotto licenza Apache License, versione 2.0:
+   http://www.apache.org/licenses/LICENSE-2.0
+
+ * JLine, sotto la licenza BSD:
+   http://www.opensource.org/licenses/bsd-license.php
+
+ * JSON in Java, sotto una licenza personalizzata:
+   http://www.json.org/license.html
+
+ * SnakeYAML, sotto licenza Apache License, versione 2.0:
+   http://www.apache.org/licenses/LICENSE-2.0
+
+ * Bouncy Castle Crypto API, sotto la licenza MIT:
+   https://www.bouncycastle.org/license.html
+
+VanillaVotifier è distribuito sotto licenza GNU, versione 3.
+Per maggiori informazioni, visita http://www.gnu.org/licenses/gpl-3.0-standalone.html
+
+Il codice sorgente è ottenibile sul sito https://github.com/xMamo/VanillaVotifier

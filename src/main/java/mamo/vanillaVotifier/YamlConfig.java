@@ -25,12 +25,13 @@ import org.yaml.snakeyaml.Yaml;
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.security.spec.InvalidKeySpecException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class YamlConfig extends AbstractConfig {
 	@SuppressWarnings("deprecation") @Nullable protected JsonConfig jsonConfig;
-	@Nullable protected Map<String, Object> yamlConfig;
 
 	public YamlConfig(@NotNull File configFile) {
 		this(configFile, null);
@@ -49,18 +50,26 @@ public class YamlConfig extends AbstractConfig {
 		}
 	}
 
-	protected void loadFromOldJsonConfig() {
+	protected void loadFromOldJsonConfig() throws IOException, InvalidKeySpecException {
+		jsonConfig.load();
 		inetSocketAddress = jsonConfig.getInetSocketAddress();
 		keyPair = jsonConfig.getKeyPair();
 		voteActions.clear();
 		voteActions.addAll(jsonConfig.getVoteActions());
+		save();
 	}
 
 	protected void loadFromConfigFile() throws IOException, InvalidKeySpecException {
 		if (!configFile.exists()) {
-			copyDefaultConfig(YamlConfig.class.getResourceAsStream("config.yaml"));
+			InputStream in = YamlConfig.class.getResourceAsStream("config.yaml");
+			copyDefaultConfig(in);
+			in.close();
 		}
-		yamlConfig = (Map<String, Object>) new Yaml().load(new BufferedReader(new FileReader(configFile)));
+
+		BufferedReader reader = new BufferedReader(new FileReader(configFile));
+		Map<String, Object> yamlConfig = (Map<String, Object>) new Yaml().load(reader);
+		reader.close();
+
 		configVersion = (Integer) yamlConfig.get("config-version");
 		logDirectory = new File((String) yamlConfig.get("log-directory"));
 		if (!logDirectory.exists()) {
@@ -84,7 +93,38 @@ public class YamlConfig extends AbstractConfig {
 
 	@Override
 	public void save() throws IOException {
-		BufferedWriter out = new BufferedWriter(new FileWriter(configFile));
+		HashMap<String, Object> yamlConfig = new HashMap<String, Object>();
+		yamlConfig.put("config-version", getConfigVersion());
+		yamlConfig.put("log-directory", getLogDirectory().getPath());
+		yamlConfig.put("server", new HashMap<String, Object>() {{
+			put("ip", getInetSocketAddress().getAddress().getHostName());
+			put("port", getInetSocketAddress().getPort());
+		}});
+		yamlConfig.put("key-pair-files", new HashMap<String, Object>() {{
+			put("public", getPublicKeyFile().getPath());
+			put("private", getPrivateKeyFile().getPath());
+		}});
+		yamlConfig.put("on-vote", new ArrayList<HashMap<String, Object>>() {{
+			for (final VoteAction voteAction : getVoteActions()) {
+				add(new HashMap<String, Object>() {{
+					if (voteAction.getCommandSender() instanceof RconCommandSender) {
+						final RconCommandSender commandSender = (RconCommandSender) voteAction.getCommandSender();
+						put("type", "rcon");
+						put("server", new HashMap<String, Object>() {{
+							put("ip", commandSender.getRconConnection().getInetSocketAddress().getAddress().getHostName());
+							put("port", commandSender.getRconConnection().getInetSocketAddress().getPort());
+							put("password", commandSender.getRconConnection().getPassword());
+						}});
+					}
+					if (voteAction.getCommandSender() instanceof ShellCommandSender) {
+						put("type", "shell");
+					}
+					put("commands", voteAction.getCommands());
+				}});
+			}
+		}});
+
+		BufferedWriter out = new BufferedWriter(new FileWriter(getConfigFile()));
 		new Yaml().dump(yamlConfig, out);
 		out.flush();
 		out.close();

@@ -40,7 +40,7 @@ on-vote:
       - 'scoreboard players add ${user-name} voted 1'
 
   # Executes one or more programs/commands.
-  # The following environment variables will be set up: "voteServiceName" to ${service-name}, "voteUserName" to ${user-name}, "voteAddress" to ${address}, "voteTimestamp" to ${timestamp}.
+  # The following environment variables will be set: "voteServiceName" to ${service-name}, "voteUserName" to ${user-name}, "voteAddress" to ${address}, "voteTimestamp" to ${timestamp}.
   - action: 'shell'
     commands:
       - 'test -x onvote.sh && ./onvote.sh' # "CMD /C IF EXIST onvote.bat onvote.bat" on Windows.

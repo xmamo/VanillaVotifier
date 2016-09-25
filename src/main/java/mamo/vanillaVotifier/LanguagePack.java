@@ -50,8 +50,9 @@ public class LanguagePack {
 				return null;
 			}
 			if (!resource.startsWith("/")) {
-				resource = languagePackPath + "/" + resource;
+				resource = "/" + languagePackPath + "/" + resource;
 			}
+			System.out.println(resource);
 			BufferedReader in = new BufferedReader(new InputStreamReader(LanguagePack.class.getResourceAsStream(resource)));
 			StringBuilder stringBuilder = new StringBuilder();
 			int i;
@@ -65,6 +66,7 @@ public class LanguagePack {
 			}
 			string = stringBuilder.toString().replaceAll("\\u000D\\u000A|[\\u000A\\u000B\\u000C\\u000D\\u0085\\u2028\\u2029]", System.getProperty("line.separator"));
 		}
+
 		if (string == null) {
 			return string;
 		} else {

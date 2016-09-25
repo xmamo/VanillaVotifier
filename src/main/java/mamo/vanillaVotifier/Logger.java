@@ -62,8 +62,9 @@ public class Logger {
 		}
 	}
 
-	public void println(@NotNull Object object) {
-		print(toString(object) + System.getProperty("line.separator"));
+	public void println(@Nullable Object object) {
+		print(toString(object));
+		print(System.getProperty("line.separator"));
 	}
 
 	@NotNull
