@@ -374,6 +374,7 @@ of that material) supplement the terms of this License with terms:
     of it) with contractual assumptions of liability to the recipient,
     for any liability that these contractual assumptions directly
     impose on those licensors and authors.</li>
+</ol>
 
 All other non-permissive additional terms are considered "further
 restrictions" within the meaning of section 10. If the Program as you
