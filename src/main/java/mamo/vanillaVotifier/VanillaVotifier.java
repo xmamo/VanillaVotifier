@@ -213,10 +213,10 @@ public class VanillaVotifier {
 				}
 			} else if (args[0].equals("showkey")) {
 				if (args.length == 2) {
-					if (args[2].equals("pub") || args[2].equals("public")) {
+					if (args[1].equals("pub") || args[1].equals("public")) {
 						votifier.getLogger().println(RsaUtils.keyToString(votifier.getConfig().getKeyPair().getPublic()));
 						continue;
-					} else if (args[2].equals("priv") || args[2].equals("private")) {
+					} else if (args[1].equals("priv") || args[1].equals("private")) {
 						votifier.getLogger().println(RsaUtils.keyToString(votifier.getConfig().getKeyPair().getPrivate()));
 						continue;
 					}
