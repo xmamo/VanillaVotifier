@@ -118,6 +118,11 @@ public class VotifierServerListener implements Listener {
 					new SimpleEntry<String, Object>("exception", connectionCloseException.getException()));
 		} else if (event instanceof DecryptInputExceptionEvent) {
 			votifier.getLogger().printlnTranslation("s46");
+		} else if (event instanceof ReadTimedOutExceptionEvent) {
+			ReadTimedOutExceptionEvent readTimedOutExceptionEvent = (ReadTimedOutExceptionEvent) event;
+			votifier.getLogger().printlnTranslation("s64",
+					new SimpleEntry<String, Object>("ip", readTimedOutExceptionEvent.getSocket().getInetAddress().getHostAddress()),
+					new SimpleEntry<String, Object>("port", readTimedOutExceptionEvent.getSocket().getPort()));
 		} else if (event instanceof CommunicationExceptionEvent) {
 			votifier.getLogger().printlnTranslation("s29", new SimpleEntry<String, Object>("exception", ((CommunicationExceptionEvent) event).getException()));
 		} else if (event instanceof ConnectionEstablishExceptionEvent) {
