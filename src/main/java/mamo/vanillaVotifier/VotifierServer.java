@@ -25,11 +25,11 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.crypto.BadPaddingException;
-import java.io.BufferedInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketOptions;
+import java.net.SocketTimeoutException;
 import java.security.interfaces.RSAPublicKey;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.HashMap;
@@ -73,6 +73,9 @@ public class VotifierServer {
 								try {
 									notifyListeners(new ConnectionEstablishedEvent(socket));
 									socket.setSoTimeout(SocketOptions.SO_TIMEOUT); // SocketException: handled by try/catch.
+									BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+									writer.write("VOTIFIER 2.9\n");
+									writer.flush();
 									BufferedInputStream in = new BufferedInputStream(socket.getInputStream()); // IOException: handled by try/catch.
 									byte[] request = new byte[((RSAPublicKey) votifier.getConfig().getKeyPair().getPublic()).getModulus().bitLength() / Byte.SIZE];
 									in.read(request); // IOException: handled by try/catch.
@@ -128,6 +131,8 @@ public class VotifierServer {
 									} catch (Exception e) { // IOException: catching just in case. Continue even if stream doesn't close.
 										notifyListeners(new ConnectionInputStreamCloseExceptionEvent(socket, e));
 									}
+								} catch (SocketTimeoutException e) {
+									notifyListeners(new ReadTimedOutExceptionEvent(socket, e));
 								} catch (BadPaddingException e) {
 									notifyListeners(new DecryptInputExceptionEvent(socket, e));
 								} catch (Exception e) {
