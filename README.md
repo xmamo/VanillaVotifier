@@ -23,7 +23,7 @@ Stops the VanillaVotifier server. Using `stop` should be preferred to quitting u
 Restarts the VanillaVotifier server. Useful for reloading the configuration after changes have been made to `config.yaml`. Using this command is equivalento to `stop`ping and starting the server again.
 
 ### `genkeypair [key-size]` ###
-Generates a new key-pair for the VanillaVotifier server. Key-size defaults to 2048.
+Generates a new key-pair for the VanillaVotifier server. `key-size` defaults to 2048.
 
 ### `showkey <(pub|priv)>` ###
 Displays the current public/private key. Don't share your private key with anyone!
