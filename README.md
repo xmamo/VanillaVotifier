@@ -157,7 +157,7 @@ This example aims to show exactly what the previous example did, but using a she
 
 1. Add a `voted` dummy score and create a Command Block clock to deal with votes, as explained in the steps 1–2 of the previous example.
 
-2. Create bash file called `on-vote.sh` in the same directory as `config.yaml`. Copy the following code in the newly created file:
+2. Create bash file called `onvote.sh` in the same directory as `config.yaml`. Copy the following code in the newly created file:
    ```Shell
    #!/bin/bash
    screen -S <screen name> -X stuff 'scoreboard players add $voteUserName voted 1
