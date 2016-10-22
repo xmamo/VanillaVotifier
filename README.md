@@ -1,5 +1,5 @@
 # VanillaVotifier #
-VanillaVotifier is a Java application which listens for votes made on Minecraft server lists for your server. Inspired by Bukkit's Votifier, VanillaVotifier aids to provide the plugins same functionality — to execute some kind of custom action on vote — but without requiring a Bukkit server. VanillaVotifier creates a liteweight server listening for votes; Minecraft commands and/or scripts can be executed when such an event occurs.
+VanillaVotifier is a Java application which listens for votes made on Minecraft server lists for your server. Inspired by Bukkit's Votifier, VanillaVotifier aids to provide the plugins same functionality — to execute some kind of custom action on vote — but without requiring a Bukkit server. VanillaVotifier creates a liteweight server listening for votes; Minecraft commands and/or scripts can be executed when such events occur.
 
 ## Requirements ##
 VanillaVotifier is a standalone application, meaning it has to be executed on a virtual or dedicated server instance. It is highly recommended to run both your Minecraft server and VanillaVotifier on the same server instance.
@@ -20,7 +20,7 @@ Displays information about VanillaVotifier, such as its version, the author, and
 Stops the VanillaVotifier server. Using `stop` should be preferred to quitting using `^C`.
 
 ### `restart` ###
-Restarts the VanillaVotifier server. Useful for reloading the configuration after changes have been made to `config.yaml`. Using this command is equivalento to `stop`ping and restarting the server.
+Restarts the VanillaVotifier server. Useful for reloading the configuration after changes have been made to `config.yaml`. Using this command is equivalento to `stop`ping and starting the server again.
 
 ### `genkeypair [key-size]` ###
 Generates a new key-pair for the VanillaVotifier server. Key-size defaults to 2048.
