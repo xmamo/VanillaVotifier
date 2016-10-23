@@ -17,10 +17,12 @@
 
 package mamo.vanillaVotifier;
 
+import mamo.vanillaVotifier.exception.BrokenPipeException;
 import mamo.vanillaVotifier.exception.InvalidRconPasswordException;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
+import java.net.SocketException;
 
 public class RconCommandSender implements CommandSender {
 	@NotNull protected RconConnection rconConnection;
@@ -41,8 +43,13 @@ public class RconCommandSender implements CommandSender {
 
 	public void logIn() throws IOException, InvalidRconPasswordException {
 		synchronized (rconConnection) {
-			rconConnection.logIn();
-			loggedIn = true;
+			try {
+				rconConnection.logIn();
+				loggedIn = true;
+			} catch (BrokenPipeException e) {
+				rconConnection = new RconConnection(rconConnection.getInetSocketAddress(), rconConnection.getPassword());
+				logIn();
+			}
 		}
 	}
 
@@ -50,10 +57,16 @@ public class RconCommandSender implements CommandSender {
 	@NotNull
 	public VotifierPacket sendCommand(@NotNull String command) throws IOException, InvalidRconPasswordException {
 		synchronized (rconConnection) {
+			try {
 			if (!isLoggedIn()) {
 				logIn();
 			}
 			return rconConnection.sendCommand(command);
+			} catch (BrokenPipeException e) {
+				rconConnection = new RconConnection(rconConnection.getInetSocketAddress(), rconConnection.getPassword());
+				logIn();
+				return sendCommand(command);
+			}
 		}
 	}
 }
