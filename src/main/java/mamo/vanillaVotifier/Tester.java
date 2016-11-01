@@ -58,6 +58,9 @@ public class Tester {
 			Cipher cipher = RsaUtils.getEncryptCipher(votifier.getConfig().getKeyPair().getPublic());
 			Socket socket = new Socket(votifier.getConfig().getInetSocketAddress().getAddress(), votifier.getConfig().getInetSocketAddress().getPort());
 			socket.setSoTimeout(SocketOptions.SO_TIMEOUT);
+			while (socket.getInputStream().read() != '\n') {
+				// Ignore the Votifier implementation version
+			}
 			socket.getOutputStream().write(cipher.doFinal(message.getBytes()));
 			socket.getOutputStream().flush();
 			socket.close();

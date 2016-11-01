@@ -99,12 +99,6 @@ public class VotifierServerListener implements Listener {
 					new SimpleEntry<String, Object>("ip", invalidRequestEvent.getSocket().getInetAddress().getHostAddress()),
 					new SimpleEntry<String, Object>("port", invalidRequestEvent.getSocket().getPort()),
 					new SimpleEntry<String, Object>("message", message));
-		} else if (event instanceof ConnectionInputStreamCloseExceptionEvent) {
-			ConnectionInputStreamCloseExceptionEvent socketInputStreamCloseException = (ConnectionInputStreamCloseExceptionEvent) event;
-			votifier.getLogger().printlnTranslation("s9",
-					new SimpleEntry<String, Object>("ip", socketInputStreamCloseException.getSocket().getInetAddress().getHostAddress()),
-					new SimpleEntry<String, Object>("port", socketInputStreamCloseException.getSocket().getPort()),
-					new SimpleEntry<String, Object>("exception", socketInputStreamCloseException.getException()));
 		} else if (event instanceof ConnectionClosedEvent) {
 			ConnectionClosedEvent connectionClosedEvent = (ConnectionClosedEvent) event;
 			votifier.getLogger().printlnTranslation("s10",

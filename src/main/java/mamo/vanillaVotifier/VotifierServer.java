@@ -126,11 +126,6 @@ public class VotifierServer {
 									} else {
 										notifyListeners(new InvalidRequestEvent(socket, requestString));
 									}
-									try {
-										in.close();
-									} catch (Exception e) { // IOException: catching just in case. Continue even if stream doesn't close.
-										notifyListeners(new ConnectionInputStreamCloseExceptionEvent(socket, e));
-									}
 								} catch (SocketTimeoutException e) {
 									notifyListeners(new ReadTimedOutExceptionEvent(socket, e));
 								} catch (BadPaddingException e) {
