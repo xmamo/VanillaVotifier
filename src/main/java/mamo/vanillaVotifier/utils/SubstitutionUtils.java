@@ -19,12 +19,15 @@ package mamo.vanillaVotifier.utils;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.text.StrSubstitutor;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map.Entry;
 
 public class SubstitutionUtils {
+	@NotNull
 	public static StrSubstitutor buildStrSubstitutor(@Nullable Entry<String, Object>... substitutions) {
 		HashMap<String, Object> substitutionsMap = new HashMap<String, Object>();
 		if (substitutions != null) {
@@ -41,5 +44,27 @@ public class SubstitutionUtils {
 			}
 		}
 		return new StrSubstitutor(substitutionsMap);
+	}
+
+	@NotNull
+	public static String applyRegexReplacements(@Nullable String string, @Nullable Entry<String, String>... substitutions) {
+		if (string == null || substitutions == null) {
+			return string;
+		}
+		for (Entry<String, String> substitution : substitutions) {
+			string = string.replaceAll(substitution.getKey(), substitution.getValue());
+		}
+		return string;
+	}
+
+	@NotNull
+	public static String applyRegexReplacements(@Nullable String string, @Nullable HashMap<String, String> substitutions) {
+		if (string == null || substitutions == null) {
+			return string;
+		}
+		for (Entry<String, String> substitution : substitutions.entrySet()) {
+			string = string.replaceAll(substitution.getKey(), substitution.getValue());
+		}
+		return string;
 	}
 }

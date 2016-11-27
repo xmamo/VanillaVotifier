@@ -84,9 +84,9 @@ public class YamlConfig extends AbstractConfig {
 		for (Map<String, Object> commandSenderConfig : (List<Map<String, Object>>) yamlConfig.get("on-vote")) {
 			if (((String) commandSenderConfig.get("action")).equalsIgnoreCase("rcon")) {
 				Map<String, Object> server = (Map<String, Object>) commandSenderConfig.get("server");
-				voteActions.add(new VoteAction(new RconCommandSender(new RconConnection(new InetSocketAddress((String) server.get("ip"), (Integer) server.get("port")), (String) server.get("password"))), (List<String>) commandSenderConfig.get("commands")));
+				voteActions.add(new VoteAction(new RconCommandSender(new RconConnection(new InetSocketAddress((String) server.get("ip"), (Integer) server.get("port")), (String) server.get("password"))), (List<String>) commandSenderConfig.get("commands"), (HashMap<String, String>) commandSenderConfig.get("regex-replace")));
 			} else if (((String) commandSenderConfig.get("action")).equalsIgnoreCase("shell")) {
-				voteActions.add(new VoteAction(new ShellCommandSender(), (List<String>) commandSenderConfig.get("commands")));
+				voteActions.add(new VoteAction(new ShellCommandSender(), (List<String>) commandSenderConfig.get("commands"), (HashMap<String, String>) commandSenderConfig.get("regex-replace")));
 			}
 		}
 	}

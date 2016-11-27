@@ -21,18 +21,24 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class VoteAction {
 	@NotNull protected CommandSender commandSender;
 	@NotNull protected List<String> commands;
+	@NotNull protected HashMap<String, String> regexReplacements;
 
-	public VoteAction(@NotNull CommandSender commandSender, @Nullable List<String> commands) {
+	public VoteAction(@NotNull CommandSender commandSender, @Nullable List<String> commands, @Nullable HashMap<String, String> regexReplacements) {
 		if (commands == null) {
 			commands = new ArrayList<String>();
 		}
+		if (regexReplacements == null) {
+			regexReplacements = new HashMap<String, String>();
+		}
 		this.commandSender = commandSender;
 		this.commands = commands;
+		this.regexReplacements = regexReplacements;
 	}
 
 	@NotNull
@@ -43,5 +49,10 @@ public class VoteAction {
 	@NotNull
 	public List<String> getCommands() {
 		return commands;
+	}
+
+	@NotNull
+	public HashMap<String, String> getRegexReplacements() {
+		return regexReplacements;
 	}
 }

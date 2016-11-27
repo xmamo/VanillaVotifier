@@ -27,6 +27,7 @@ import java.io.*;
 import java.net.InetSocketAddress;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 @Deprecated
 public class JsonConfig extends AbstractConfig {
@@ -71,7 +72,7 @@ public class JsonConfig extends AbstractConfig {
 			for (int j = 0; j < commandsJsonArray.length(); j++) {
 				commands.add(commandsJsonArray.getString(j));
 			}
-			voteActions.add(new VoteAction(new RconCommandSender(new RconConnection(new InetSocketAddress(jsonObject.getString("ip"), jsonObject.getInt("port")), jsonObject.getString("password"))), commands));
+			voteActions.add(new VoteAction(new RconCommandSender(new RconConnection(new InetSocketAddress(jsonObject.getString("ip"), jsonObject.getInt("port")), jsonObject.getString("password"))), commands, new HashMap<String, String>()));
 		}
 		if (save) {
 			save();
