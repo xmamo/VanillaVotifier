@@ -7,7 +7,7 @@ log-directory: 'logs'
 
 # The IP address and port of the VanillaVotifier server.
 server:
-  ip: '127.0.0.1'
+  ip: '0.0.0.0'
   port: 8192
 
 # The relative path to the public and private key files.
@@ -23,7 +23,7 @@ on-vote:
     # The IP address, port, and password of the RCon server.
     # Using a local IP address should be preferred, since the RCon protocol requires passwords to be sent as plaintext.
     server:
-      ip: '127.0.0.1'
+      ip: '0.0.0.0'
       port: 25575
       password: 'password'
 
