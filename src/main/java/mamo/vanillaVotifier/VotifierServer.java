@@ -34,10 +34,12 @@ import java.security.interfaces.RSAPublicKey;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.PatternSyntaxException;
 
 public class VotifierServer {
 	@NotNull protected VanillaVotifier votifier;
@@ -86,20 +88,24 @@ public class VotifierServer {
 									String[] requestArray = requestString.split("\n");
 									if ((requestArray.length == 5 || requestArray.length == 6) && requestArray[0].equals("VOTE")) {
 										notifyListeners(new VoteEventVotifier(socket, new Vote(requestArray[1], requestArray[2], requestArray[3], requestArray[4])));
-										SimpleEntry<String, Object>[] substitutions = new SimpleEntry[4];
-										substitutions[0] = new SimpleEntry<String, Object>("service-name", requestArray[1]);
-										substitutions[1] = new SimpleEntry<String, Object>("user-name", requestArray[2]);
-										substitutions[2] = new SimpleEntry<String, Object>("address", requestArray[3]);
-										substitutions[3] = new SimpleEntry<String, Object>("timestamp", requestArray[4]);
-										StrSubstitutor substitutor = SubstitutionUtils.buildStrSubstitutor(substitutions);
-										HashMap<String, String> environment = new HashMap<String, String>();
-										environment.put("voteServiceName", requestArray[1]);
-										environment.put("voteUserName", requestArray[2]);
-										environment.put("voteAddress", requestArray[3]);
-										environment.put("voteTimestamp", requestArray[4]);
 										for (VoteAction voteAction : votifier.getConfig().getVoteActions()) {
+											String[] params = new String[4];
+											try {
+												for (int i = 0; i < params.length; i++) {
+													params[i] = SubstitutionUtils.applyRegexReplacements(requestArray[i + 1], voteAction.getRegexReplacements());
+												}
+											} catch (PatternSyntaxException e) {
+												notifyListeners(new RegularExpressionPatternErrorException(e));
+												params = new String[]{requestArray[1], requestArray[2], requestArray[3], requestArray[4]};
+											}
 											if (voteAction.getCommandSender() instanceof RconCommandSender) {
 												RconCommandSender commandSender = (RconCommandSender) voteAction.getCommandSender();
+												StrSubstitutor substitutor = SubstitutionUtils.buildStrSubstitutor(
+														new SimpleEntry<String, Object>("service-name", params[0]),
+														new SimpleEntry<String, Object>("user-name", params[1]),
+														new SimpleEntry<String, Object>("address", params[2]),
+														new SimpleEntry<String, Object>("timestamp", params[3])
+												);
 												for (String command : voteAction.getCommands()) {
 													String theCommand = substitutor.replace(command);
 													notifyListeners(new SendingRconCommandEvent(commandSender.getRconConnection(), theCommand));
@@ -112,6 +118,11 @@ public class VotifierServer {
 											}
 											if (voteAction.getCommandSender() instanceof ShellCommandSender) {
 												ShellCommandSender commandSender = (ShellCommandSender) voteAction.getCommandSender();
+												HashMap<String, String> environment = new HashMap<String, String>();
+												environment.put("voteServiceName", params[0]);
+												environment.put("voteUserName", params[1]);
+												environment.put("voteAddress", params[2]);
+												environment.put("voteTimestamp", params[3]);
 												for (String command : voteAction.getCommands()) {
 													notifyListeners(new SendingShellCommandEvent(command));
 													try {

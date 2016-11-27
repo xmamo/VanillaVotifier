@@ -39,8 +39,12 @@ on-vote:
       - 'tellraw @a {"text":"${user-name} has just voted for this server on ${service-name}. Thanks!","color":"yellow"}'
       - 'scoreboard players add ${user-name} voted 1'
 
+    regex-replace: {}
+
   # Executes one or more programs/commands.
   # The following environment variables will be set: "voteServiceName" to ${service-name}, "voteUserName" to ${user-name}, "voteAddress" to ${address}, "voteTimestamp" to ${timestamp}.
   - action: 'shell'
     commands:
       - 'test -x onvote.sh && ./onvote.sh' # "CMD /C IF EXIST onvote.bat onvote.bat" on Windows.
+
+    regex-replace: {}
