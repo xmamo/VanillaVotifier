@@ -36,6 +36,8 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONException;
+import org.yaml.snakeyaml.parser.ParserException;
+import org.yaml.snakeyaml.scanner.ScannerException;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -236,6 +238,10 @@ public class VanillaVotifier {
 			return true;
 		} catch (JSONException e) {
 			getLogger().printlnTranslation("s45", new SimpleEntry<String, Object>("exception", e.getMessage().replaceAll("'", "\"")));
+		} catch (ScannerException e) {
+			getLogger().printlnTranslation("s66", new SimpleEntry<String, Object>("exception", e.getMessage().replaceAll("'", "\"")));
+		} catch (ParserException e) {
+			getLogger().printlnTranslation("s66", new SimpleEntry<String, Object>("exception", e.getMessage().replaceAll("'", "\"")));
 		} catch (PublicKeyFileNotFoundException e) {
 			getLogger().printlnTranslation("s49");
 		} catch (PrivateKeyFileNotFoundException e) {

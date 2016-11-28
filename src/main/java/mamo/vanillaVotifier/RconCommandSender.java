@@ -58,10 +58,10 @@ public class RconCommandSender implements CommandSender {
 	public VotifierPacket sendCommand(@NotNull String command) throws IOException, InvalidRconPasswordException {
 		synchronized (rconConnection) {
 			try {
-			if (!isLoggedIn()) {
-				logIn();
-			}
-			return rconConnection.sendCommand(command);
+				if (!isLoggedIn()) {
+					logIn();
+				}
+				return rconConnection.sendCommand(command);
 			} catch (BrokenPipeException e) {
 				rconConnection = new RconConnection(rconConnection.getInetSocketAddress(), rconConnection.getPassword());
 				logIn();
