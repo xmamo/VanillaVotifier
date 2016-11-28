@@ -44,7 +44,7 @@ log-directory: 'logs'
 
 # The IP address and port of the VanillaVotifier server.
 server:
-  ip: '127.0.0.1'
+  ip: '0.0.0.0'
   port: 8192
 
 # The relative path to the public and private key files.
@@ -60,7 +60,7 @@ on-vote:
     # The IP address, port, and password of the RCon server.
     # Using a local IP address should be preferred, since the RCon protocol requires passwords to be sent as plaintext.
     server:
-      ip: '127.0.0.1'
+      ip: '0.0.0.0'
       port: 25575
       password: 'password'
 
@@ -70,17 +70,21 @@ on-vote:
     # "${address}" will be replaced with the player's IP address.
     # "${timestamp}" will be replaced with the time stamp in which the player has voted. Format may vary depending on voting service.
     #
-    # It is not recommended to use commands such as "give", "effect", etc., since they wouldn't work if the player is offline.
-    # Instead, set a certain score (using the "scoreboard players set <player> <objective> <score> [dataTag]" command) and handle rewarding through an ingame Command Block clock which is always loaded.
+    # It is not recommended to use commands such as "/give", "/effect", etc., since they wouldn't work if the player is offline.
+    # Instead, set a certain score (using the "/scoreboard players set <player> <objective> <score> [dataTag]" command) and handle rewarding through an ingame Command Block clock which is always loaded.
     commands:
       - 'tellraw @a {"text":"${user-name} has just voted for this server on ${service-name}. Thanks!","color":"yellow"}'
       - 'scoreboard players add ${user-name} voted 1'
+
+    regex-replace: {}
 
   # Executes one or more programs/commands.
   # The following environment variables will be set: "voteServiceName" to ${service-name}, "voteUserName" to ${user-name}, "voteAddress" to ${address}, "voteTimestamp" to ${timestamp}.
   - action: 'shell'
     commands:
       - 'test -x onvote.sh && ./onvote.sh' # "CMD /C IF EXIST onvote.bat onvote.bat" on Windows.
+
+    regex-replace: {}
 ```
 
 The default configuration is extensively documented, such that all configuration sections should be self-explanatory. Still, all options are explained below.
