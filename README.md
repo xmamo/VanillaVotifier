@@ -70,8 +70,8 @@ on-vote:
     # "${address}" will be replaced with the player's IP address.
     # "${timestamp}" will be replaced with the time stamp in which the player has voted. Format may vary depending on voting service.
     #
-    # It is not recommended to use commands such as "/give", "/effect", etc., since they wouldn't work if the player is offline.
-    # Instead, set a certain score (using the "/scoreboard players set <player> <objective> <score> [dataTag]" command) and handle rewarding through an ingame Command Block clock which is always loaded.
+    # It is not recommended to use commands such as "give", "effect", etc., since they wouldn't work if the player is offline.
+    # Instead, set a certain score (using the "scoreboard players set <player> <objective> <score> [dataTag]" command) and handle rewarding through an ingame Command Block clock which is always loaded.
     commands:
       - 'tellraw @a {"text":"${user-name} has just voted for this server on ${service-name}. Thanks!","color":"yellow"}'
       - 'scoreboard players add ${user-name} voted 1'
@@ -118,9 +118,19 @@ A list of commands to send to the RCon server. Before execution, the command wil
  * `${timestamp}` will be replaced with the time stamp in which the player has voted. Format may vary depending on voting service.
 
 It is not recommended to use commands such as `give`, `effect`, etc., since they wouldn't work if the player is offline. Instead, set a certain score (using the `scoreboard players set <player> <objective> <score> [dataTag]` command) and handle rewarding through an ingame Command Block clock which is always loaded.
+
+##### `regex-replace` #####
+Contains a list of regex replacements to perform on `${service-name}`, `${user-name}`, `${address}`, `${timestamp}`. Can be used to sanitize input.
+
+Example:
+```YAML
+    regex-replace:
+      'Hi': 'Hello'
+      '[dD]\s*[iI1]\s*[cC]\s*[kK]': '****'
+```
  
 #### `shell` action ####
-Executes a list of commands, scripts, or programs. The following environment variables will be set: `voteServiceName` to `${service-name}`, `voteUserName` to `${user-name}`, `voteAddress` to `${address}`, `voteTimestamp` to `${timestamp}`.
+Executes a list of commands, scripts, or programs. The following environment variables will be set: `voteServiceName` to `${service-name}`, `voteUserName` to `${user-name}`, `voteAddress` to `${address}`, `voteTimestamp` to `${timestamp}`. As with `rcon` actions, a list of regex replacements can be specified through the `regex-replace` section.
 
 ###  Configuration examples ###
 #### `rcon` action example ####
@@ -152,6 +162,7 @@ This example shows how to set up a simple "get a diamond for voting" system usin
          password: <RCon password>
        commands:
          - 'scoreboard players add ${user-name} voted 1'
+       regex-replace: {}
    ```
 
 4. If VanillaVotifier is already running, reload the configuration using using VanillaVotifier's `restart` command; otherwise, just start up VanillaVotifier.
@@ -174,6 +185,7 @@ This example aims to show exactly what the previous example did, but using a she
      - action: 'shell'
        commands:
          - './onvote.sh'
+       regex-replace: {}
    ```
 
 4. If VanillaVotifier is already running, reload the configuration using VanillaVotifier's `restart` command; otherwise, just start up VanillaVotifier.
