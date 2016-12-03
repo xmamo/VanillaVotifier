@@ -23,7 +23,8 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 public class TimestampUtils {
-	@NotNull protected static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd HH.mm.ss");
+	@NotNull
+	protected static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd HH.mm.ss");
 
 	@NotNull
 	public static String getTimestamp() {
