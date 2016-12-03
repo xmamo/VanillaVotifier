@@ -1,4 +1,4 @@
-# VanillaVotifier #
+# VanillaVotifier ([download](https://github.com/xMamo/VanillaVotifier/releases/latest)) #
 VanillaVotifier is a Java application which listens for votes made on Minecraft server lists for your server. Inspired by Bukkit's Votifier, VanillaVotifier aids to provide the plugins same functionality — to execute some kind of custom action on vote — but without requiring a Bukkit server. VanillaVotifier creates a liteweight server listening for votes; Minecraft commands and/or scripts can be executed when such events occur.
 
 ## Requirements ##
