@@ -1,4 +1,6 @@
 # VanillaVotifier #
+([Download](https://github.com/xMamo/VanillaVotifier/releases/latest))
+
 VanillaVotifier is a Java application which listens for votes made on Minecraft server lists for your server. Inspired by Bukkit's Votifier, VanillaVotifier aids to provide the plugins same functionality — to execute some kind of custom action on vote — but without requiring a Bukkit server. VanillaVotifier creates a liteweight server listening for votes; Minecraft commands and/or scripts can be executed when such events occur.
 
 ## Requirements ##
@@ -44,7 +46,7 @@ log-directory: 'logs'
 
 # The IP address and port of the VanillaVotifier server.
 server:
-  ip: '127.0.0.1'
+  ip: '0.0.0.0'
   port: 8192
 
 # The relative path to the public and private key files.
@@ -60,7 +62,7 @@ on-vote:
     # The IP address, port, and password of the RCon server.
     # Using a local IP address should be preferred, since the RCon protocol requires passwords to be sent as plaintext.
     server:
-      ip: '127.0.0.1'
+      ip: '0.0.0.0'
       port: 25575
       password: 'password'
 
@@ -70,17 +72,21 @@ on-vote:
     # "${address}" will be replaced with the player's IP address.
     # "${timestamp}" will be replaced with the time stamp in which the player has voted. Format may vary depending on voting service.
     #
-    # It is not recommended to use commands such as "give", "effect", etc., since they wouldn't work if the player is offline.
-    # Instead, set a certain score (using the "scoreboard players set <player> <objective> <score> [dataTag]" command) and handle rewarding through an ingame Command Block clock which is always loaded.
+    # It is not recommended to use commands such as "/give", "/effect", etc., since they wouldn't work if the player is offline.
+    # Instead, set a certain score (using the "/scoreboard players set <player> <objective> <score> [dataTag]" command) and handle rewarding through an ingame Command Block clock which is always loaded.
     commands:
       - 'tellraw @a {"text":"${user-name} has just voted for this server on ${service-name}. Thanks!","color":"yellow"}'
       - 'scoreboard players add ${user-name} voted 1'
+
+    regex-replace: {}
 
   # Executes one or more programs/commands.
   # The following environment variables will be set: "voteServiceName" to ${service-name}, "voteUserName" to ${user-name}, "voteAddress" to ${address}, "voteTimestamp" to ${timestamp}.
   - action: 'shell'
     commands:
       - 'test -x onvote.sh && ./onvote.sh' # "CMD /C IF EXIST onvote.bat onvote.bat" on Windows.
+
+    regex-replace: {}
 ```
 
 The default configuration is extensively documented, such that all configuration sections should be self-explanatory. Still, all options are explained below.
@@ -114,9 +120,19 @@ A list of commands to send to the RCon server. Before execution, the command wil
  * `${timestamp}` will be replaced with the time stamp in which the player has voted. Format may vary depending on voting service.
 
 It is not recommended to use commands such as `give`, `effect`, etc., since they wouldn't work if the player is offline. Instead, set a certain score (using the `scoreboard players set <player> <objective> <score> [dataTag]` command) and handle rewarding through an ingame Command Block clock which is always loaded.
+
+##### `regex-replace` #####
+Contains a list of regex replacements to perform on `${service-name}`, `${user-name}`, `${address}`, `${timestamp}`. Can be used to sanitize input.
+
+Example:
+```YAML
+    regex-replace:
+      'Hi': 'Hello'
+      '[dD]\s*[iI1]\s*[cC]\s*[kK]': '****'
+```
  
 #### `shell` action ####
-Executes a list of commands, scripts, or programs. The following environment variables will be set: `voteServiceName` to `${service-name}`, `voteUserName` to `${user-name}`, `voteAddress` to `${address}`, `voteTimestamp` to `${timestamp}`.
+Executes a list of commands, scripts, or programs. The following environment variables will be set: `voteServiceName` to `${service-name}`, `voteUserName` to `${user-name}`, `voteAddress` to `${address}`, `voteTimestamp` to `${timestamp}`. As with `rcon` actions, a list of regex replacements can be specified through the `regex-replace` section.
 
 ###  Configuration examples ###
 #### `rcon` action example ####
@@ -148,6 +164,7 @@ This example shows how to set up a simple "get a diamond for voting" system usin
          password: <RCon password>
        commands:
          - 'scoreboard players add ${user-name} voted 1'
+       regex-replace: {}
    ```
 
 4. If VanillaVotifier is already running, reload the configuration using using VanillaVotifier's `restart` command; otherwise, just start up VanillaVotifier.
@@ -170,6 +187,7 @@ This example aims to show exactly what the previous example did, but using a she
      - action: 'shell'
        commands:
          - './onvote.sh'
+       regex-replace: {}
    ```
 
 4. If VanillaVotifier is already running, reload the configuration using VanillaVotifier's `restart` command; otherwise, just start up VanillaVotifier.
