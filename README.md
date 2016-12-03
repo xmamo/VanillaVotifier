@@ -191,3 +191,6 @@ This example aims to show exactly what the previous example did, but using a she
    ```
 
 4. If VanillaVotifier is already running, reload the configuration using VanillaVotifier's `restart` command; otherwise, just start up VanillaVotifier.
+
+## Tutorial video ##
+[![Tutorial video](https://raw.githubusercontent.com/xMamo/VanillaVotifier/master/tutorial-video-preview.png)](https://www.youtube.com/watch?v=mRHu5d-BcXQ)
