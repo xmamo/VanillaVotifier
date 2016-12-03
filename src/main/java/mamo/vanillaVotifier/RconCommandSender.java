@@ -22,7 +22,6 @@ import mamo.vanillaVotifier.exception.InvalidRconPasswordException;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
-import java.net.SocketException;
 
 public class RconCommandSender implements CommandSender {
 	@NotNull protected RconConnection rconConnection;
