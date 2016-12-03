@@ -70,8 +70,8 @@ on-vote:
     # "${address}" will be replaced with the player's IP address.
     # "${timestamp}" will be replaced with the time stamp in which the player has voted. Format may vary depending on voting service.
     #
-    # It is not recommended to use commands such as "give", "effect", etc., since they wouldn't work if the player is offline.
-    # Instead, set a certain score (using the "scoreboard players set <player> <objective> <score> [dataTag]" command) and handle rewarding through an ingame Command Block clock which is always loaded.
+    # It is not recommended to use commands such as "/give", "/effect", etc., since they wouldn't work if the player is offline.
+    # Instead, set a certain score (using the "/scoreboard players set <player> <objective> <score> [dataTag]" command) and handle rewarding through an ingame Command Block clock which is always loaded.
     commands:
       - 'tellraw @a {"text":"${user-name} has just voted for this server on ${service-name}. Thanks!","color":"yellow"}'
       - 'scoreboard players add ${user-name} voted 1'
