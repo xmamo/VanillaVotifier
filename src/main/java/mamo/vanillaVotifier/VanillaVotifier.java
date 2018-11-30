@@ -69,7 +69,7 @@ public class VanillaVotifier {
 
 	public static void main(@Nullable String[] arguments) {
 		String[] javaVersion = System.getProperty("java.version").split("\\.");
-		if (!(javaVersion.length >= 1 && Integer.parseInt(javaVersion[0]) >= 1 && javaVersion.length >= 2 && Integer.parseInt(javaVersion[1]) >= 6)) {
+		if (!(javaVersion.length >= 2 && ((Integer.parseInt(javaVersion[0]) == 1 && Integer.parseInt(javaVersion[1]) >= 6) || Integer.parseInt(javaVersion[0]) >= 2))) {
 			System.out.println(("You need at least Java 1.6 to run this program! Current version: " + System.getProperty("java.version") + "."));
 			return;
 		}
@@ -309,7 +309,8 @@ public class VanillaVotifier {
 		return server;
 	}
 
-	public @NotNull Tester getTester() {
+	@NotNull
+	public Tester getTester() {
 		return tester;
 	}
 }
