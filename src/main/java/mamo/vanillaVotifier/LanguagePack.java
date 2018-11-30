@@ -52,7 +52,6 @@ public class LanguagePack {
 			if (!resource.startsWith("/")) {
 				resource = "/" + languagePackPath + "/" + resource;
 			}
-			System.out.println(resource);
 			BufferedReader in = new BufferedReader(new InputStreamReader(LanguagePack.class.getResourceAsStream(resource)));
 			StringBuilder stringBuilder = new StringBuilder();
 			int i;
