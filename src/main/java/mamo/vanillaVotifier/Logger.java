@@ -24,19 +24,23 @@ import org.jetbrains.annotations.Nullable;
 import java.io.BufferedWriter;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Map.Entry;
 
 public class Logger {
 	@NotNull protected VanillaVotifier votifier;
 	@NotNull protected StringBuffer buffer = new StringBuffer();
 	private BufferedWriter logWriter;
+	private SimpleDateFormat formatter = new SimpleDateFormat("[HH:mm:ss]");
 
 	public Logger(@NotNull VanillaVotifier votifier) {
 		this.votifier = votifier;
 	}
 
 	public void print(@Nullable Object object) {
-		String string = toString(object);
+		String timestamp = formatter.format(new Date());
+		String string = timestamp + " " + toString(object);
 		synchronized (votifier.getWriter()) {
 			try {
 				votifier.getWriter().write(string);
@@ -63,8 +67,7 @@ public class Logger {
 	}
 
 	public void println(@Nullable Object object) {
-		print(toString(object));
-		print(System.getProperty("line.separator"));
+		print(toString(object) + System.getProperty("line.separator"));
 	}
 
 	@NotNull
