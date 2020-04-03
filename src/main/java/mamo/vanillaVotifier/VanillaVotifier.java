@@ -125,7 +125,7 @@ public class VanillaVotifier {
 					votifier.stopServer();
 					break;
 				} else {
-					votifier.getLogger().printlnTranslation("s17");
+					System.out.println(votifier.getLanguagePack().getString("s17"));
 				}
 			} else if (args[0].equals("restart")) {
 				if (args.length == 1) {
@@ -143,7 +143,7 @@ public class VanillaVotifier {
 					});
 					votifier.stopServer();
 				} else {
-					votifier.getLogger().printlnTranslation("s56");
+					System.out.println(votifier.getLanguagePack().getString("s56"));
 				}
 			} else if (args[0].equals("genkeypair")) {
 				int keySize;
@@ -153,19 +153,19 @@ public class VanillaVotifier {
 					try {
 						keySize = Integer.parseInt(args[1]);
 					} catch (NumberFormatException e) {
-						votifier.getLogger().printlnTranslation("s19");
+						System.out.println(votifier.getLanguagePack().getString("s19"));
 						continue;
 					}
 					if (keySize < 512) {
-						votifier.getLogger().printlnTranslation("s51");
+						System.out.println(votifier.getLanguagePack().getString("s51"));
 						continue;
 					}
 					if (keySize > 16384) {
-						votifier.getLogger().printlnTranslation("s52");
+						System.out.println(votifier.getLanguagePack().getString("s52"));
 						continue;
 					}
 				} else {
-					votifier.getLogger().printlnTranslation("s20");
+					System.out.println(votifier.getLanguagePack().getString("s20"));
 					continue;
 				}
 				votifier.getLogger().printlnTranslation("s16");
@@ -184,7 +184,7 @@ public class VanillaVotifier {
 						votifier.getLogger().printlnTranslation("s27", new SimpleEntry<String, Object>("exception", e));
 					}
 				} else {
-					votifier.getLogger().printlnTranslation("s26");
+					System.out.println(votifier.getLanguagePack().getString("s26"));
 				}
 			} else if (args[0].equals("testquery")) {
 				if (args.length >= 2) {
@@ -199,33 +199,33 @@ public class VanillaVotifier {
 						votifier.getLogger().printlnTranslation("s35", new SimpleEntry<String, Object>("exception", e));
 					}
 				} else {
-					votifier.getLogger().printlnTranslation("s34");
+					System.out.println(votifier.getLanguagePack().getString("s34"));
 				}
 			} else if (args[0].equals("help")) {
 				if (args.length == 1) {
-					votifier.getLogger().printlnTranslation("s31");
+					System.out.println(votifier.getLanguagePack().getString("s31"));
 				} else {
-					votifier.getLogger().printlnTranslation("s32");
+					System.out.println(votifier.getLanguagePack().getString("s32"));
 				}
 			} else if (args[0].equals("info")) {
 				if (args.length == 1) {
-					votifier.getLogger().printlnTranslation("s40");
+					System.out.println(votifier.getLanguagePack().getString("s40"));
 				} else {
-					votifier.getLogger().printlnTranslation("s41");
+					System.out.println(votifier.getLanguagePack().getString("s41"));
 				}
 			} else if (args[0].equals("showkey")) {
 				if (args.length == 2) {
 					if (args[1].equals("pub") || args[1].equals("public")) {
-						votifier.getLogger().println(RsaUtils.keyToString(votifier.getConfig().getKeyPair().getPublic()));
+						System.out.println(RsaUtils.keyToString(votifier.getConfig().getKeyPair().getPublic()));
 						continue;
 					} else if (args[1].equals("priv") || args[1].equals("private")) {
-						votifier.getLogger().println(RsaUtils.keyToString(votifier.getConfig().getKeyPair().getPrivate()));
+						System.out.println(RsaUtils.keyToString(votifier.getConfig().getKeyPair().getPrivate()));
 						continue;
 					}
 				}
-				votifier.getLogger().printTranslation("s63");
+				System.out.println(votifier.getLanguagePack().getString("s63"));
 			} else {
-				votifier.getLogger().printlnTranslation("s33");
+				System.out.println(votifier.getLanguagePack().getString("s33"));
 			}
 		}
 	}
