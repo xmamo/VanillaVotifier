@@ -194,3 +194,6 @@ This example aims to show exactly what the previous example did, but using a she
 
 ## Tutorial video ##
 [![Tutorial video](https://raw.githubusercontent.com/xMamo/VanillaVotifier/master/tutorial-video-preview.png)](https://www.youtube.com/watch?v=mRHu5d-BcXQ)
+
+## Additional resources ##
+![Vote Tools](https://www.nbt-data.com/creation?id=15), a datapack designed to easily accept incoming votes. By ![Advocaite](https://github.com/advocaite).
