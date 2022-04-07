@@ -44,6 +44,7 @@ import java.io.FileNotFoundException;
 import java.io.Writer;
 import java.net.BindException;
 import java.util.AbstractMap.SimpleEntry;
+import java.util.concurrent.TimeUnit;
 import java.util.List;
 
 public class VanillaVotifier {
@@ -102,6 +103,10 @@ public class VanillaVotifier {
 			String[] args;
 			try {
 				String command = reader.readLine();
+				if (command == null) {
+					TimeUnit.SECONDS.sleep(1);
+					continue;
+				}
 				args = delimiter.delimit(command, command.length()).getArguments();
 				if (args == null) {
 					args = new String[]{};
