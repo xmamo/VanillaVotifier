@@ -31,7 +31,7 @@ import mamo.vanillaVotifier.exception.PrivateKeyFileNotFoundException;
 import mamo.vanillaVotifier.exception.PublicKeyFileNotFoundException;
 import mamo.vanillaVotifier.utils.RsaUtils;
 import mamo.vanillaVotifier.utils.TimestampUtils;
-import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
