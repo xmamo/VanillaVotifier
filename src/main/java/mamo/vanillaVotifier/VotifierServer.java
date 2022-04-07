@@ -20,7 +20,7 @@ package mamo.vanillaVotifier;
 import mamo.vanillaVotifier.event.*;
 import mamo.vanillaVotifier.utils.RsaUtils;
 import mamo.vanillaVotifier.utils.SubstitutionUtils;
-import org.apache.commons.lang3.text.StrSubstitutor;
+import org.apache.commons.text.StringSubstitutor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -102,7 +102,7 @@ public class VotifierServer {
 											}
 											if (voteAction.getCommandSender() instanceof RconCommandSender) {
 												RconCommandSender commandSender = (RconCommandSender) voteAction.getCommandSender();
-												StrSubstitutor substitutor = SubstitutionUtils.buildStrSubstitutor(
+												StringSubstitutor substitutor = SubstitutionUtils.buildStrSubstitutor(
 														new SimpleEntry<String, Object>("service-name", params[0]),
 														new SimpleEntry<String, Object>("user-name", params[1]),
 														new SimpleEntry<String, Object>("address", params[2]),

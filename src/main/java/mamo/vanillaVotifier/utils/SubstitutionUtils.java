@@ -18,7 +18,7 @@
 package mamo.vanillaVotifier.utils;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.commons.lang3.text.StrSubstitutor;
+import org.apache.commons.text.StringSubstitutor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -27,7 +27,7 @@ import java.util.Map.Entry;
 
 public class SubstitutionUtils {
 	@NotNull
-	public static StrSubstitutor buildStrSubstitutor(@Nullable Entry<String, Object>... substitutions) {
+	public static StringSubstitutor buildStrSubstitutor(@Nullable Entry<String, Object>... substitutions) {
 		HashMap<String, Object> substitutionsMap = new HashMap<String, Object>();
 		if (substitutions != null) {
 			for (Entry<String, Object> substitution : substitutions) {
@@ -42,7 +42,7 @@ public class SubstitutionUtils {
 				}
 			}
 		}
-		return new StrSubstitutor(substitutionsMap);
+		return new StringSubstitutor(substitutionsMap);
 	}
 
 	@NotNull
