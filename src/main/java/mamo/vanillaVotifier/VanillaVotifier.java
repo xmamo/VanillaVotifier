@@ -31,7 +31,7 @@ import mamo.vanillaVotifier.exception.PrivateKeyFileNotFoundException;
 import mamo.vanillaVotifier.exception.PublicKeyFileNotFoundException;
 import mamo.vanillaVotifier.utils.RsaUtils;
 import mamo.vanillaVotifier.utils.TimestampUtils;
-import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -44,6 +44,7 @@ import java.io.FileNotFoundException;
 import java.io.Writer;
 import java.net.BindException;
 import java.util.AbstractMap.SimpleEntry;
+import java.util.concurrent.TimeUnit;
 import java.util.List;
 
 public class VanillaVotifier {
@@ -102,6 +103,10 @@ public class VanillaVotifier {
 			String[] args;
 			try {
 				String command = reader.readLine();
+				if (command == null) {
+					TimeUnit.SECONDS.sleep(1);
+					continue;
+				}
 				args = delimiter.delimit(command, command.length()).getArguments();
 				if (args == null) {
 					args = new String[]{};

@@ -17,7 +17,7 @@
 
 package mamo.vanillaVotifier;
 
-import org.apache.commons.lang3.text.StrTokenizer;
+import org.apache.commons.text.StringTokenizer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -33,7 +33,7 @@ public class ShellCommandSender implements CommandSender {
 
 	@NotNull
 	public Process sendCommand(@NotNull String command, @Nullable Map<String, String> environment) throws IOException {
-		ProcessBuilder processBuilder = new ProcessBuilder(new StrTokenizer(command).getTokenArray());
+		ProcessBuilder processBuilder = new ProcessBuilder(new StringTokenizer(command).getTokenArray());
 		if (environment != null) {
 			processBuilder.environment().putAll(environment);
 		}
