@@ -1,7 +1,10 @@
 /*
 !src/
+!.github/
 !.gitattributes
 !.gitignore
+!docker-entrypoint.sh
+!Dockerfile
 !pom.xml
 !README.md
 !example.png
