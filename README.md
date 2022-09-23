@@ -9,6 +9,143 @@ VanillaVotifier is a standalone application, meaning it has to be executed on a 
 ## Installation ##
 You can download the latest version of VanillaVotifier [here](https://github.com/xMamo/VanillaVotifier/releases/latest). Once downloaded, just run the application using `java -jar VanillaVotifier.jar` (it is recommended to run VanillaVotifier in an empty directory). On first startup, VanillaVotifier automatically creates a new configuration file in the current working directory (called `config.yaml`) and two additional key files referenced by the config (`public.pem` and `private.pem`). These key files are needed in order to communicate between you (the server) and a Minecraft server list. Once VanillaVotifier finishes starting up up, type `showkey pub`: you will get the public key string most Minecraft server lists require you to provide when you register your server.
 
+## Docker ##
+
+There is also a Docker image available; for example, to run VanillaVotifier with a Docker command:
+```
+docker run -d -it -p 8192:8192 --name votifier xMamo/VanillaVotifier
+```
+
+You can attach and interact at any time using:
+```
+docker attach votifier
+```
+and then Control-p Control-q to **detach**.
+
+### Environment variables ###
+
+The container exposes some environment variables to help with automation:
+
+#### Version ####
+
+You can find the available versions of VanillaVotifier on the releases page [here](https://github.com/xMamo/VanillaVotifier/releases).
+
+You can set `VOTIFIER_VERSION` to an available release version:
+```
+-e VOTIFIER_VERSION="v4.2.1"
+```
+
+#### Download your config ####
+
+By default, the container will grab the default VanillaVotifier config at runtime.
+You may want to change the config, in which case you should make it available at a public URL and specify it:
+```
+-e CONFIG_YAML_URL="https://raw.githubusercontent.com/xMamo/VanillaVotifier/master/src/main/resources/mamo/vanillaVotifier/config.yaml"
+```
+
+#### JVM arguments ####
+
+General JVM arguments can be passed to the Minecraft Server invocation by passing a `JVM_ARGS`.
+
+For example, to set the memory allocation:
+```
+-e JVM_ARGS="-Xms512M -Xmx1024M"
+```
+
+#### Replacing variables inside config ####
+
+Sometimes, you may have votifier configuration that is only available at runtime.
+For those cases there is the option to replace defined variables inside your configs
+with environment variables defined at container runtime.
+
+When the environment variable `REPLACE_ENV` is set to `true`, the startup script
+will go through all `yaml` files inside the container's `/data` path and replace
+variables that match the container's environment variables.
+
+Variables that you want to replace need to be declared inside curly brackets
+and prefixed with a dollar sign, such as  `${CFG_YOUR_VARIABLE}`, which is same
+as many scripting languages.
+
+If you want to use a file's content for value, such as when using secrets mounted
+as files, declare the placeholder named like normal in the file and declare an
+environment variable named the same but with the suffix `_FILE`. 
+
+For example, a `config.yaml` file could contain:
+
+```
+on-vote:
+  - action: 'rcon'
+    server:
+      ip: '0.0.0.0'
+      port: 25575
+      password: '${CFG_RCON_PASSWORD}'
+```
+
+...a secret declared in the docker-compose file with:
+```yaml
+secrets:
+  rcon_password:
+    external: true
+```
+
+...and finally the environment variable would be named with a `_FILE` suffix and point to the mounted secret:
+```yaml
+    environment:
+      CFG_RCON_PASSWORD_FILE: /run/secrets/rcon_password
+```
+
+#### Example ####
+
+Here is a full example where we want to replace values inside a `config.yaml`.
+
+```yml
+on-vote:
+  - action: 'rcon'
+    server:
+      ip: '${CFG_RCON_IP}'
+      port: ${CFG_RCON_PORT}
+      password: '${CFG_RCON_PASSWORD}'
+    commands:
+      - 'tellraw @a {"text":"${user-name} has just voted for ${CFG_SERVER_NAME} on ${service-name}. Thanks!","color":"${CFG_TEXT_COLOR}"}'
+      - 'scoreboard players add ${user-name} voted 1'
+```
+
+This is how your `docker-compose.yml` file could look like:
+
+```yml
+version: "3.8"
+
+services:
+  votifier:
+    image: xMamo/VanillaVotifier
+    ports:
+      - "25565:25565"
+    volumes:
+      - "votifier:/data"
+    environment:
+      # set Java memory allocation
+      JVM_ARGS: "-Xms512M -Xmx1024M"
+      # select Votifier version (from GitHub releases)
+      VOTIFIER_VERSION: "v4.2.1"
+      # URL to your config file to be downloaded at runtime
+      CONFIG_YAML_URL: "http://example.org/my-votifier-config.yaml"
+      # enable env variable replacement
+      REPLACE_ENV: "TRUE"
+      # and here are the actual variables
+      CFG_RCON_IP: "0.0.0.0"
+      CFG_RCON_PORT: "25575"
+      CFG_RCON_PASSWORD_FILE: "/run/secrets/rcon_password"
+      CFG_SERVER_NAME: "foobar"
+      CFG_TEXT_COLOR: "yellow"
+
+volumes:
+  votifier:
+
+secrets:
+  rcon_password:
+    file: ./rcon_password
+```
+
 ## Commands ##
 While VanillaVotifier is running, some built-in commands can be executed. You can get a list of these commands using `help`. Each command is explained in greater detail below.
 
