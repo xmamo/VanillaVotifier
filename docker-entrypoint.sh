@@ -20,7 +20,7 @@ ARTIFACT_URL="${RELEASES_URL}/download/${RELEASE_TAG}/VanillaVotifier.jar"
 >&2 echo "[info] Downloading ${ARTIFACT_URL}..."
 curl -fsSL "${ARTIFACT_URL}" -o /data/VanillaVotifier.jar
 
-if [[ ! $CONFIG_YAML_URL && ! -f /data/config.yaml ]]; then
+if [[ ! -f /data/config.yaml && ! $FORCE_REPLACE_CONFIG ]]; then
   if [[ ! $CONFIG_YAML_URL ]]; then
     >&2 echo "[warn] \$CONFIG_YAML_URL not specified, using default"
     CONFIG_YAML_URL="https://raw.githubusercontent.com/xMamo/VanillaVotifier/${RELEASE_TAG}/src/main/resources/mamo/vanillaVotifier/config.yaml"

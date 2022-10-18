@@ -37,7 +37,7 @@ You can set `VOTIFIER_VERSION` to an available release version:
 
 #### Download your config ####
 
-By default, the container will grab the default VanillaVotifier config at runtime.
+By default, the container will grab the default VanillaVotifier config at first runtime. If you want to force the config to be replaced, set `FORCE_REPLACE_CONFIG=true`.
 You may want to change the config, in which case you should make it available at a public URL and specify it:
 ```
 -e CONFIG_YAML_URL="https://raw.githubusercontent.com/xMamo/VanillaVotifier/master/src/main/resources/mamo/vanillaVotifier/config.yaml"
