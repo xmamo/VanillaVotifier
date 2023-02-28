@@ -27,6 +27,7 @@ if [[ ! -f /data/config.yaml && ! $FORCE_REPLACE_CONFIG ]]; then
   fi
 
   >&2 echo "[info] Downloading ${CONFIG_YAML_URL}..."
+  rm -f /data/config.yaml
   curl -fsSL "${CONFIG_YAML_URL}" -o /data/config.yaml
 fi
 
